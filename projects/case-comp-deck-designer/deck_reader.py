@@ -3,9 +3,13 @@
 Type sizes are reported as they would appear on a standard 13.33in-wide slide,
 so decks exported at different page sizes can be compared with each other.
 
+Slides that break a readability limit are listed under the table: type smaller than
+8pt, or more than 450 words. Both limits come from the skill in SKILL.md.
+
 Usage:
-    python deck_reader.py deck.pdf            print the table
+    python deck_reader.py deck.pdf            print the table and any slides over the limits
     python deck_reader.py deck.pdf out_dir    also render every slide into out_dir as JPEG
+    python deck_reader.py deck.pdf --strict   exit with status 1 when a slide is over a limit
 """
 from __future__ import annotations
 
@@ -20,6 +24,8 @@ from typing import Iterable, Sequence
 
 SLIDE_WIDTH_PT = 960.0  # a 13.33in-wide slide at 72 points per inch
 CONTENT_MIN_WORDS = 60  # fewer words than this is a cover, divider or thank-you slide
+MIN_TYPE_PT = 8.0  # the skill's floor: smaller type cannot be read on a slide
+MAX_WORDS = 450  # the densest content slides in the skill's reference decks
 
 
 @dataclass(frozen=True)
@@ -106,10 +112,41 @@ def format_report(slides: Sequence[SlideStats]) -> str:
     return "\n".join(lines)
 
 
+def slide_flags(
+    slide: SlideStats, min_type_pt: float = MIN_TYPE_PT, max_words: int = MAX_WORDS
+) -> list[str]:
+    """The readability limits one slide breaks, as short phrases. Empty when it breaks none."""
+    flags = []
+    # compare the size as the report prints it, so 7.96pt shows and counts as 8.0pt
+    if slide.words and round(slide.smallest_pt, 1) < min_type_pt:
+        flags.append(f"type at {slide.smallest_pt:.1f}pt, under the {min_type_pt:g}pt floor")
+    if slide.words > max_words:
+        flags.append(f"{slide.words} words, over the {max_words}-word limit")
+    return flags
+
+
+def format_flags(
+    slides: Sequence[SlideStats], min_type_pt: float = MIN_TYPE_PT, max_words: int = MAX_WORDS
+) -> str:
+    """One line per broken limit under a heading, or an empty string when nothing is flagged."""
+    lines = [
+        f"  slide {slide.number}: {flag}"
+        for slide in slides
+        for flag in slide_flags(slide, min_type_pt, max_words)
+    ]
+    return "\n".join(["Over the limits:", *lines]) if lines else ""
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Measure a PDF slide deck slide by slide.")
     parser.add_argument("deck", help="the deck as a PDF")
     parser.add_argument("out_dir", nargs="?", help="folder to render the slides into as JPEG")
+    parser.add_argument("--min-type", type=float, default=MIN_TYPE_PT, metavar="PT",
+                        help="flag slides with type smaller than this (default: %(default)g)")
+    parser.add_argument("--max-words", type=int, default=MAX_WORDS, metavar="N",
+                        help="flag slides with more words than this (default: %(default)s)")
+    parser.add_argument("--strict", action="store_true",
+                        help="exit with status 1 when any slide is over a limit")
     args = parser.parse_args(argv)
     if not Path(args.deck).is_file():
         parser.error(f"no such file: {args.deck}")
@@ -117,7 +154,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.out_dir:
         render_slides(args.deck, args.out_dir)
     print(format_report(slides))
-    return 0
+    flags = format_flags(slides, args.min_type, args.max_words)
+    if flags:
+        print(flags)
+    return 1 if flags and args.strict else 0
 
 
 if __name__ == "__main__":

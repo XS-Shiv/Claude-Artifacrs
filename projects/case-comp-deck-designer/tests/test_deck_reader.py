@@ -55,8 +55,51 @@ def test_report_has_a_summary_line_and_one_line_per_slide():
     )
 
 
-@pytest.fixture
-def sample_deck(tmp_path):
+def test_readable_slide_within_the_word_limit_has_no_flags():
+    assert dr.slide_flags(SlideStats(2, 450, 0, 11.0, 8.0)) == []
+
+
+def test_small_type_is_flagged():
+    assert dr.slide_flags(SlideStats(2, 300, 0, 11.0, 6.7)) == [
+        "type at 6.7pt, under the 8pt floor"
+    ]
+
+
+def test_type_that_prints_as_the_floor_is_not_flagged():
+    # 7.96pt shows as 8.0pt in the report, so it must not be reported as under 8pt
+    assert dr.slide_flags(SlideStats(2, 300, 0, 11.0, 7.96)) == []
+
+
+def test_too_many_words_is_flagged():
+    assert dr.slide_flags(SlideStats(4, 451, 0, 9.0, 9.0)) == ["451 words, over the 450-word limit"]
+
+
+def test_slide_with_no_text_is_not_flagged_for_type_size():
+    assert dr.slide_flags(SlideStats(1, 0, 3, 0.0, 0.0)) == []
+
+
+def test_limits_can_be_changed():
+    live_deck_slide = SlideStats(3, 130, 0, 14.0, 11.0)
+    assert dr.slide_flags(live_deck_slide, min_type_pt=12, max_words=120) == [
+        "type at 11.0pt, under the 12pt floor",
+        "130 words, over the 120-word limit",
+    ]
+
+
+def test_flags_are_listed_by_slide_under_a_heading():
+    deck = [SlideStats(1, 4, 0, 40.0, 40.0), SlideStats(2, 560, 0, 9.0, 5.0)]
+    assert dr.format_flags(deck) == (
+        "Over the limits:\n"
+        "  slide 2: type at 5.0pt, under the 8pt floor\n"
+        "  slide 2: 560 words, over the 450-word limit"
+    )
+
+
+def test_deck_within_the_limits_has_nothing_to_list():
+    assert dr.format_flags([SlideStats(1, 300, 0, 11.0, 8.0)]) == ""
+
+
+def build_deck(tmp_path, name="deck.pdf", source_pt=6):
     """A two-slide deck on a 10in-wide page: a cover, then a dense content slide."""
     canvas = pytest.importorskip("reportlab.pdfgen.canvas")
     image = pytest.importorskip("PIL.Image")
@@ -65,7 +108,7 @@ def sample_deck(tmp_path):
     logo = tmp_path / "logo.png"
     image.new("RGB", (8, 8), "navy").save(logo)
 
-    path = tmp_path / "deck.pdf"
+    path = tmp_path / name
     c = canvas.Canvas(str(path), pagesize=(720, 405))
     c.setFont("Helvetica-Bold", 30)
     c.drawString(60, 200, "Sample strategy deck")
@@ -76,12 +119,22 @@ def sample_deck(tmp_path):
     c.setFont("Helvetica", 9)
     for row in range(8):  # 8 rows of 10 words
         c.drawString(40, 320 - row * 14, " ".join(f"word{row}{i}" for i in range(10)))
-    c.setFont("Helvetica", 6)
+    c.setFont("Helvetica", source_pt)
     c.drawString(40, 20, "Source: assumption")  # 2 words
     c.drawImage(str(logo), 640, 350, width=40, height=40)
     c.showPage()
     c.save()
     return path
+
+
+@pytest.fixture
+def sample_deck(tmp_path):
+    return build_deck(tmp_path)
+
+
+@pytest.fixture
+def small_type_deck(tmp_path):
+    return build_deck(tmp_path, name="small_type.pdf", source_pt=5)
 
 
 def test_read_pdf_measures_each_slide(sample_deck):
@@ -107,6 +160,22 @@ def test_cli_renders_one_image_per_slide(sample_deck, tmp_path, capsys):
     out_dir = tmp_path / "slides"
     assert dr.main([str(sample_deck), str(out_dir)]) == 0
     assert len(list(out_dir.glob("s-*.jpg"))) == 2
+
+
+def test_cli_lists_slides_over_the_limits(small_type_deck, capsys):
+    assert dr.main([str(small_type_deck)]) == 0
+    out = capsys.readouterr().out.splitlines()
+    assert out[-2:] == ["Over the limits:", "  slide 2: type at 6.7pt, under the 8pt floor"]
+
+
+def test_strict_mode_fails_a_deck_over_the_limits(small_type_deck, sample_deck, capsys):
+    assert dr.main([str(small_type_deck), "--strict"]) == 1
+    assert dr.main([str(sample_deck), "--strict"]) == 0
+
+
+def test_cli_limits_can_be_tightened(sample_deck, capsys):
+    assert dr.main([str(sample_deck), "--strict", "--max-words", "80"]) == 1
+    assert capsys.readouterr().out.splitlines()[-1] == "  slide 2: 88 words, over the 80-word limit"
 
 
 def test_cli_rejects_a_missing_file(tmp_path, capsys):

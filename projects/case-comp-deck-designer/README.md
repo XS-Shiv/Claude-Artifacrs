@@ -25,13 +25,22 @@ Output for a four-slide sample:
  2 |  231 words |  1 images | body 10.7pt | smallest  8.0pt
  3 |  311 words |  1 images | body 10.7pt | smallest  6.7pt
  4 |    2 words |  0 images | body 40.0pt | smallest 40.0pt
+Over the limits:
+  slide 3: type at 6.7pt, under the 8pt floor
 ```
 
 How to read it:
 
 - A slide with fewer than 60 words counts as a cover, divider or thank-you slide and is left out of the median.
 - Type sizes are shown as they would appear on a standard 13.33in-wide slide, so decks exported at different page sizes can be compared.
-- Slide 3 in the sample has text at 6.7pt, which is under the 8pt floor the skill holds a deck to.
+- A slide is listed under "Over the limits" when it has type smaller than 8pt or more than 450 words. Both limits come from the skill: 8pt is its floor for readable type, and 450 words is the densest content slide in its reference decks.
+
+To use it as a check before submitting, add `--strict`, which exits with status 1 when any slide is over a limit. The limits can be changed, for example for a deck that will be presented live:
+
+```bash
+python deck_reader.py deck.pdf --strict
+python deck_reader.py deck.pdf --strict --min-type 12 --max-words 120
+```
 
 To also save every slide as an image, add a folder name. This needs [poppler](https://poppler.freedesktop.org/) installed.
 

@@ -5,7 +5,7 @@ Planned work, grouped into small projects. Ticked items are done; `LOG.md` has t
 ## case-comp-deck-designer (in progress)
 
 - [x] Add the skill and a tested deck reader for PDF decks
-- [ ] Flag slides that break the skill's own limits: type under 8pt, more than 450 words
+- [x] Flag slides that break the skill's own limits: type under 8pt, more than 450 words
 - [ ] `--json` and `--csv` output so results can be compared across decks
 - [ ] Read `.pptx` directly with python-pptx, without converting to PDF first
 - [ ] List topic-only titles (no verb and no number)
