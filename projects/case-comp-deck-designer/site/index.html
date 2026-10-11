@@ -1,0 +1,1185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case Comp Deck Designer</title>
+<meta name="description" content="Design case-competition slide decks using the user&#x27;s case comp playbook and a pattern library learned from their reference decks. Use for any case comp, consulting challenge or pitch deck - building, restructuring, critiquing, or learning from new decks.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column under a slide-style header band; the band's tab row is the page's section tracker. */
+:root {
+  --bg: #F5F6FB; --surface: #FFFFFF; --ink: #1B2145; --muted: #596085;
+  --band: #1F2A63; --band-ink: #FFFFFF; --band-muted: #C6CCEC;
+  --accent: #E39A1E; --accent-ink: #1B2145;
+  --line: #D8DCEC; --tint: #ECEFFA; --code-bg: #EFF1FA;
+  --display: "Archivo", "Arial Narrow", Arial, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1330; --surface: #161C40; --ink: #E7E9F6; --muted: #A2A8CB;
+    --band: #232E6E; --band-ink: #FFFFFF; --band-muted: #BFC6EA;
+    --accent: #F0AE3C; --accent-ink: #161B3A;
+    --line: #2B3465; --tint: #1C244F; --code-bg: #121838; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1330; --surface: #161C40; --ink: #E7E9F6; --muted: #A2A8CB;
+  --band: #232E6E; --band-ink: #FFFFFF; --band-muted: #BFC6EA;
+  --accent: #F0AE3C; --accent-ink: #161B3A;
+  --line: #2B3465; --tint: #1C244F; --code-bg: #121838; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.6; }
+.wrap { max-width: 54rem; margin-inline: auto; padding-inline: 20px; }
+header.band { background: var(--band); color: var(--band-ink); }
+header.band .wrap { padding-block: 0 28px; }
+.tracker { display: flex; flex-wrap: wrap; gap: 2px; margin-inline: -20px; padding-inline: 20px; background: color-mix(in srgb, var(--band) 70%, #000); }
+.tracker a { flex: 1 1 auto; min-width: 0; padding: 9px 14px; font: 600 0.8rem/1.2 var(--display); letter-spacing: 0.04em; text-transform: uppercase; text-align: center; color: var(--band-muted); text-decoration: none; }
+.tracker a:hover, .tracker a:focus-visible { background: var(--accent); color: var(--accent-ink); outline: none; }
+.eyebrow { display: inline-block; margin-top: 28px; padding: 3px 10px; background: var(--accent); color: var(--accent-ink); font: 700 0.75rem/1.4 var(--display); letter-spacing: 0.08em; text-transform: uppercase; }
+h1 { margin: 12px 0 8px; font: 700 clamp(1.9rem, 5vw, 2.7rem)/1.1 var(--display); text-wrap: balance; }
+.lede { margin: 0; max-width: 40rem; font-size: 1.08rem; color: var(--band-muted); }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 20px; }
+.btn { font: 600 0.95rem/1 var(--body); padding: 11px 18px; border: 0; border-radius: 3px; background: var(--accent); color: var(--accent-ink); cursor: pointer; }
+.btn:hover { filter: brightness(1.06); }
+.btn:focus-visible, summary:focus-visible, textarea:focus-visible, main a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+header .btn:focus-visible { outline-color: var(--band-ink); }
+.btn.small { padding: 7px 12px; font-size: 0.8rem; background: transparent; color: var(--ink); border: 1px solid var(--line); flex: none; }
+.btn.small:hover { background: var(--tint); filter: none; }
+.status { font-size: 0.9rem; color: var(--band-muted); min-height: 1.4em; }
+main.wrap { padding-block: 28px 64px; display: flex; flex-direction: column; gap: 32px; }
+section.use { background: var(--surface); border: 1px solid var(--line); padding: 20px 22px 22px; }
+.label { display: inline-block; padding: 3px 10px; background: var(--band); color: var(--band-ink); font: 700 0.75rem/1.4 var(--display); letter-spacing: 0.08em; text-transform: uppercase; }
+section.use ol { margin: 14px 0 0; padding-left: 1.3rem; display: flex; flex-direction: column; gap: 6px; }
+.prompts { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.prompts li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; background: var(--tint); }
+.prompt-text { min-width: 0; font-size: 0.95rem; }
+.note { margin: 14px 0 0; font-size: 0.9rem; color: var(--muted); }
+.sub { margin: 20px 0 0; font: 600 0.95rem/1.3 var(--body); }
+article { min-width: 0; }
+article > :first-child { margin-top: 0; }
+article p, article li { max-width: 44rem; }
+article h2 { margin: 44px 0 12px; padding: 8px 14px; background: var(--band); color: var(--band-ink); font: 700 1.3rem/1.25 var(--display); text-wrap: balance; scroll-margin-top: 12px; }
+article h3 { margin: 30px 0 8px; padding-bottom: 6px; border-bottom: 2px solid var(--accent); font: 700 1.08rem/1.3 var(--display); text-wrap: balance; }
+article ul, article ol { padding-left: 1.3rem; }
+article li + li { margin-top: 4px; }
+article code { font-family: var(--mono); font-size: 0.86em; background: var(--code-bg); padding: 1px 4px; }
+.table-wrap { overflow-x: auto; margin: 14px 0; border: 1px solid var(--line); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { padding: 8px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+th { background: var(--tint); font-weight: 600; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td:first-child { font-weight: 500; min-width: 9rem; }
+pre { margin: 14px 0; padding: 14px 16px; background: var(--code-bg); border-left: 4px solid var(--band); overflow-x: auto; font: 400 0.8rem/1.55 var(--mono); }
+pre code { background: none; padding: 0; font-size: inherit; }
+pre.card { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); }
+details { border: 1px solid var(--line); background: var(--surface); }
+summary { padding: 12px 16px; font-weight: 600; cursor: pointer; }
+textarea { display: block; width: 100%; height: 22rem; border: 0; border-top: 1px solid var(--line); padding: 14px 16px; background: var(--code-bg); color: var(--ink); font: 400 0.78rem/1.5 var(--mono); resize: vertical; }
+footer { font-size: 0.85rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<header class="band">
+  <div class="wrap">
+    <nav class="tracker" aria-label="Sections">
+      <a href="#use">Use it</a>
+      <a href="#build-mode">Playbook</a>
+      <a href="#learn-mode">Learn mode</a>
+      <a href="#pattern-library">Pattern library</a>
+      <a href="#raw">Raw file</a>
+    </nav>
+    <span class="eyebrow">Claude skill</span>
+    <h1>Case Comp Deck Designer</h1>
+    <p class="lede">Builds, critiques and learns from case-competition decks. It follows a case comp playbook and a pattern library distilled from nine reference decks.</p>
+    <div class="actions">
+      <button type="button" class="btn" id="copy-skill">Copy the skill</button>
+      <span class="status" id="status" role="status" aria-live="polite"></span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="use" id="use">
+    <span class="label">Use it</span>
+    <ol>
+      <li>Copy the skill with the button above.</li>
+      <li>Paste it into a chat with Claude and ask it to save it as a skill.</li>
+      <li>Attach your case and ask for a deck.</li>
+    </ol>
+    <p class="sub">Prompts to try once it is saved</p>
+    <ul class="prompts">
+<li><span class="prompt-text">Build a 6-slide submission deck for this case. The problem statement and judging criteria are attached.</span><button type="button" class="btn small" data-copy="Build a 6-slide submission deck for this case. The problem statement and judging criteria are attached.">Copy</button></li>
+<li><span class="prompt-text">Critique my draft deck against the rubric and give me the top fixes.</span><button type="button" class="btn small" data-copy="Critique my draft deck against the rubric and give me the top fixes.">Copy</button></li>
+<li><span class="prompt-text">Learn from these decks and update the pattern library. The second one won its competition.</span><button type="button" class="btn small" data-copy="Learn from these decks and update the pattern library. The second one won its competition.">Copy</button></li>
+    </ul>
+    <p class="note">Built from one 51-slide playbook session and nine reference decks (134 slides). The library holds layout and structure patterns only, not any team's analysis or numbers.</p>
+  </section>
+
+  <article>
+<p>Design decks for case competitions (B-school case comps, live consulting challenges, corporate pitch rounds) so they read like the decks that reach finals: one argument, proven slide by slide, at consulting density.</p>
+<p>Two things drive every decision here:</p>
+<ul>
+<li><strong>The playbook</strong> (Build mode below): how to decode a brief, build the argument and lay out the deck. It comes from the user's "Case Competition 101" session.</li>
+<li><strong>The pattern library</strong> (end of this file): what the user's reference decks actually look like, with one card per deck. When the library and a general default disagree, the library wins, because it is the user's taste written down.</li>
+</ul>
+<h2 id="who-the-deck-is-for">Who the deck is for</h2>
+<p>A judge screening many submissions, giving each deck a minute or two, often with no presenter in the room. Judges reward <strong>sellability</strong>: an idea clear enough to understand, credible enough to trust and sharp enough to remember. It breaks into five tests, and every slide should help at least one:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Test</th>
+<th>The judge is asking</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Clarity</td>
+<td>Can I follow the logic fast?</td>
+</tr>
+<tr>
+<td>Feasibility</td>
+<td>Would this survive real constraints: cost, owners, time?</td>
+</tr>
+<tr>
+<td>Innovation</td>
+<td>Is the idea distinctive and useful?</td>
+</tr>
+<tr>
+<td>Evidence</td>
+<td>Are the numbers and assumptions defensible?</td>
+</tr>
+<tr>
+<td>Storytelling</td>
+<td>Does the deck build belief slide by slide?</td>
+</tr>
+</tbody>
+</table></div>
+<p>The clearest, most feasible, most sellable idea wins, not the cleverest one. When a choice comes up between showing more analysis and making the recommendation easier to believe, choose belief.</p>
+<h2 id="pick-the-mode">Pick the mode</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>The user...</th>
+<th>Mode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gives a case, problem statement, analysis or rough notes and wants a deck</td>
+<td><strong>Build</strong></td>
+</tr>
+<tr>
+<td>gives their own draft deck and wants it better</td>
+<td><strong>Critique and redesign</strong></td>
+</tr>
+<tr>
+<td>attaches finished decks and says "learn from these" or "add this to the library"</td>
+<td><strong>Learn</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>A request can be two of these in sequence (learn from three decks, then build one). Learn first.</p>
+<h2 id="build-mode">Build mode</h2>
+<h3 id="1-decode-the-brief">1. Decode the brief</h3>
+<p>A deck that answers the wrong question loses however good it looks, so pin these five down in writing before anything else. Read what the user attached first, then ask only for what is missing.</p>
+<ol>
+<li><strong>Core objective</strong>: the one outcome the organiser wants ("grow B2B e-commerce using Gen AI").</li>
+<li><strong>Context versus constraints</strong>: what is given about the situation, and what limits the answer (budget, adoption inertia, regulation).</li>
+<li><strong>Deliverables</strong>: exactly what was asked for (a solution, a GTM plan, 5-year financials). Each one needs a slide.</li>
+<li><strong>Scope</strong>: market, geography, time frame, what is out.</li>
+<li><strong>Unknowns</strong>: what the brief does not say and research or assumptions must fill.</li>
+</ol>
+<p>Also get the rules that change the deck: slide limit and whether the appendix counts, judging criteria and weights, file format, whether it will be presented or only read, and the client's brand. If the user is not around, assume a read-only 16:9 PDF, state the assumptions at the top of the reply and carry on.</p>
+<p>How the brief is written changes how much to assume:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Brief type</th>
+<th>Handle it by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Detailed, lots of data</td>
+<td>Selecting. Use the three or four facts that drive the answer and leave the rest out.</td>
+</tr>
+<tr>
+<td>Minimalist</td>
+<td>Stating assumptions early and visibly.</td>
+</tr>
+<tr>
+<td>Hidden identity</td>
+<td>Working out who the company is from the clues and verifying with public data.</td>
+</tr>
+<tr>
+<td>Fictional</td>
+<td>Anchoring every idea in a real parallel.</td>
+</tr>
+<tr>
+<td>Hybrid</td>
+<td>Separating real facts from invented conditions on the slide.</td>
+</tr>
+<tr>
+<td>Open innovation</td>
+<td>Defining the problem yourself before solving it. That definition is slide one.</td>
+</tr>
+</tbody>
+</table></div>
+<p>The kind of case decides which proof the judges expect to see:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Case type</th>
+<th>Proof that has to be on the slides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Strategy</td>
+<td>Market entry or growth logic, options weighed, portfolio choices</td>
+</tr>
+<tr>
+<td>Marketing</td>
+<td>Segmentation and targeting, positioning, funnel, channel budget with CAC and ROI</td>
+</tr>
+<tr>
+<td>B-plan</td>
+<td>TAM, SAM, SOM, business model, unit economics</td>
+</tr>
+<tr>
+<td>Operations</td>
+<td>Where the bottleneck is, cost or time saved, process before and after</td>
+</tr>
+<tr>
+<td>Social / ESG</td>
+<td>Stakeholder adoption, measurable impact, cost per outcome, sustainability</td>
+</tr>
+<tr>
+<td>Product / open innovation</td>
+<td>Problem definition, user journey, product mockup, implementation logic</td>
+</tr>
+<tr>
+<td>Finance</td>
+<td>Scenarios, sensitivity, risk quantified, hedging or funding plan</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="2-pick-the-deck-format">2. Pick the deck format</h3>
+<p>The reference decks come in two shapes (eight are reading decks, one is a live finale deck), and mixing them up is costly, so decide before writing slides.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Submission deck (read without you)</th>
+<th>Live finale deck (presented)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Length</td>
+<td>5-8 content slides plus appendix</td>
+<td>25-35 slides</td>
+</tr>
+<tr>
+<td>Words per content slide</td>
+<td>250-400, in 3-5 labelled sections</td>
+<td>30-120 on most slides</td>
+</tr>
+<tr>
+<td>Each slide</td>
+<td>A complete mini-argument with its proof</td>
+<td>One message or one big number, built up over several slides</td>
+</tr>
+<tr>
+<td>Devices</td>
+<td>Section tracker, tables, charts, outcome boxes</td>
+<td>Persona story, big-number tiles, product demo, QR code</td>
+</tr>
+<tr>
+<td>Dense slides</td>
+<td>All of them</td>
+<td>Only feasibility, risk and cost, mostly in the appendix</td>
+</tr>
+</tbody>
+</table></div>
+<p>Default to the submission deck unless the user says it will be presented live.</p>
+<h3 id="3-build-the-argument">3. Build the argument</h3>
+<p><strong>Lead with the answer.</strong> Write the pyramid before any slide:</p>
+<ul>
+<li>The <strong>question</strong> the judges asked.</li>
+<li>The <strong>answer</strong> in one decision-ready sentence: what, for whom, how and by when.</li>
+<li><strong>Three reasons</strong>, mutually exclusive and together complete (for example customer pull, financial viability, execution readiness).</li>
+<li><strong>Evidence</strong> under each reason that survives a follow-up question.</li>
+</ul>
+<p>Test it by reading only the top line of each box, top to bottom. If that still argues the case, the pyramid holds.</p>
+<p><strong>Turn data into insight.</strong> Every number on a slide should complete this chain, or it is decoration:</p>
+<ul>
+<li>Data: "Of every Rs 100 spent, Rs 46 goes to the salesman."</li>
+<li>Insight: "Sales cost is the biggest piece of the spend."</li>
+<li>So what: "A tech-enabled ordering channel attacks the largest cost line."</li>
+</ul>
+<p><strong>Structure the problem.</strong> Name the north-star metric, then split what holds it back into branches with no overlap and no gap (revenue, cost, customer, execution is a common first cut). Test which branch matters most and spend the deck there.</p>
+<p><strong>Prioritise.</strong> Nobody can solve everything, and judges value depth over breadth. Place the candidate ideas on impact against feasibility, keep the top two or three, and put the detailed scoring (impact, cost, time, scalability, risk, differentiation) in the appendix.</p>
+<p><strong>Make it a solution tree.</strong> North star, then two or three levers, then initiatives under each. An initiative earns a place on a slide only when it has an owner, a timeline, a cost and a KPI.</p>
+<p><strong>Use frameworks as tools.</strong> A framework belongs on a slide only if it changes a decision or produces a number. Use it to organise the thinking and let the audience barely notice it. A slide titled with the framework's name is usually a sign it is filler.</p>
+<h3 id="4-lay-out-the-spine">4. Lay out the spine</h3>
+<p>The winning spine has six parts. Under a tight limit each is one slide; with more room, the solution and the selling plan get more.</p>
+<ol>
+<li><strong>Problem and insight</strong>: the tension and the one finding that reframes it</li>
+<li><strong>Solution overview</strong>: the answer and its two or three levers</li>
+<li><strong>How to sell the solution</strong>: go-to-market, adoption, how it gets past the market's resistance</li>
+<li><strong>Financials and ROI</strong>: what it costs, what it returns, when it pays back</li>
+<li><strong>Roadmap</strong>: phases, owners, milestones</li>
+<li><strong>Q&amp;A readiness</strong>: risks and mitigation in the deck, backup in the appendix</li>
+</ol>
+<p>Then:</p>
+<ul>
+<li>Write the <strong>ghost deck</strong>: slide titles only, in order. Read top to bottom they should be the whole argument. Think of each slide as an episode that leaves the reader wanting the next one.</li>
+<li>Map slides to the <strong>judging criteria</strong>. A criterion worth 30% with no slide behind it is the most common way good analysis loses.</li>
+<li>Show the user the ghost deck before building when they are present. Changing a title costs nothing; changing a built slide costs a rebuild.</li>
+</ul>
+<p>For a presented deck, the opening two minutes follow a fixed order: one line of context and tension, one sharp insight or surprising number, the recommendation in one sentence, then how the deck will prove it.</p>
+<h3 id="5-design-each-slide">5. Design each slide</h3>
+<p><strong>One message, dense proof.</strong> The playbook says one idea per slide and the reference decks carry 300 words a slide. Both are true: each slide makes one claim in its title, and everything below it is organised evidence for that claim. Density comes from tables, charts and labelled blocks, never from paragraphs. If a slide has two messages, split it.</p>
+<p><strong>Anatomy of a content slide</strong> in a submission deck:</p>
+<ul>
+<li><strong>Header band</strong> in the client's brand colour with the title in it, client logo at the right.</li>
+<li><strong>Action title</strong>: a full sentence stating the conclusion, two lines at most, with a number where one exists. "Chennai resists quick commerce but offers a first-mover advantage", not "Chennai market analysis".</li>
+<li><strong>Section tracker</strong> across the top when the deck has four or more sections, with the current one filled.</li>
+<li><strong>3-5 sections</strong>, each headed by a filled label bar. The eye should travel left to right through a complete story: what is wrong, what we do, what it achieves.</li>
+<li><strong>Proof beside the claim</strong>: the table, chart or calculation sits next to the conclusion it supports.</li>
+<li><strong>Outcome box</strong> at the end of each solution block: the quantified result, visually distinct ("about 80% of time spent on inventory saved").</li>
+<li><strong>Source footnotes</strong>, numbered, in small type, and a slide number.</li>
+</ul>
+<p><strong>A solution slide</strong> should answer these in the order the eye meets them: what the product looks like (a mockup or minimum viable version), how it fits into the user's day, what impact it makes, which pain point it addresses, what value it adds, and why it is practically feasible.</p>
+<p>Pick the archetype from what the slide has to prove. All of these appear in the reference decks:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>The slide has to show</th>
+<th>Archetype</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The whole answer on one page</td>
+<td>Current state, then gaps, then thesis and success metrics</td>
+</tr>
+<tr>
+<td>The market and why now</td>
+<td>Stat strip of 4-5 big numbers above primary research and desk research side by side</td>
+</tr>
+<tr>
+<td>That real customers feel the problem</td>
+<td>Quotes from named personas, survey size stated, field photos</td>
+</tr>
+<tr>
+<td>Who to target</td>
+<td>Segmentation funnel narrowing to profile cards, the target marked</td>
+</tr>
+<tr>
+<td>How big the prize is</td>
+<td>TAM, SAM, SOM as nested pills with the numbers</td>
+</tr>
+<tr>
+<td>How we compare</td>
+<td>2x2 positioning map, or a feature matrix with ticks and crosses and competitor logos</td>
+</tr>
+<tr>
+<td>Which market or option to pick</td>
+<td>Comparison table with the chosen column highlighted</td>
+</tr>
+<tr>
+<td>The strategy at a glance</td>
+<td>Strategy house: vision on top, 3 pillars, objective and enablers under each. Reuse it as the divider for each section with the other pillars greyed out.</td>
+</tr>
+<tr>
+<td>What we recommend</td>
+<td>Row per solution: what is unique, where it sits, challenge addressed, how it works, impact</td>
+</tr>
+<tr>
+<td>How the product works</td>
+<td>Annotated phone mockup with callouts, or user journey before and after</td>
+</tr>
+<tr>
+<td>That the solution fits each segment</td>
+<td>Suitability matrix, segments across, solutions down, one-line reason in each cell</td>
+</tr>
+<tr>
+<td>How we take it to market</td>
+<td>Channel cards, each with budget, CAC, ROI and purpose</td>
+</tr>
+<tr>
+<td>Whether it pays</td>
+<td>Headline number tiles, then a unit-economics waterfall or table with the total row highlighted</td>
+</tr>
+<tr>
+<td>How it rolls out</td>
+<td>Years or phases across, functions down (product, sales, operations), a rationale row, and the financials for each period underneath</td>
+</tr>
+<tr>
+<td>What could go wrong</td>
+<td>Risk, mitigation and metric table, or a probability-impact 2x2</td>
+</tr>
+<tr>
+<td>What changes</td>
+<td>Before and after, with targets written as from and to ("attendance 68% to 85%")</td>
+</tr>
+<tr>
+<td>Why this idea first</td>
+<td>Scoring table (for example RICE) with the chosen rows highlighted</td>
+</tr>
+<tr>
+<td>How robust the numbers are</td>
+<td>Scenario and sensitivity tables</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="6-apply-the-design-system">6. Apply the design system</h3>
+<p>Use the library's design system at the end of this file. If the user names a client or brand, take the palette from that brand. The reference decks do this consistently: the deck looks like it belongs to the company it is written for.</p>
+<h3 id="7-prove-it-numerically">7. Prove it numerically</h3>
+<p>Numbers turn a pitch from aspirational to defensible. The financial slide should cover as many of these as the case allows: unit economics (price minus variable cost), investment needed split into one-time and recurring, break-even (how and when cost is recovered), payback period, ROI, and a multi-year view tied to the roadmap. Replace adjectives with rupees, percentages, time or volume everywhere, and show units, scope, time frame and source for each figure.</p>
+<p>Every number needs a source or the label "assumption". Never invent data to fill a chart. When a figure is missing, estimate it with visible logic and label it an estimate, or leave a marked placeholder and tell the user. Judges probe numbers first, and one unsupported figure discredits the rest.</p>
+<h3 id="8-prepare-the-appendix">8. Prepare the appendix</h3>
+<p>Judges have unspoken doubts in a predictable order. Have backup for each, answer-first and easy to find:</p>
+<ol>
+<li>Assumptions and data quality: source table with dates, sensitivity</li>
+<li>Unit economics and hidden costs: cost build-up, buffers, exclusions</li>
+<li>Feasibility and execution: owners, dependencies</li>
+<li>Alternatives and trade-offs: why this option over the others</li>
+<li>Risk, compliance and ethics, including any use of AI</li>
+</ol>
+<p>When space is short, keep three: assumptions, sensitivity, risk mitigation. The reference decks keep a clearly marked appendix after the main story, and three of them link or QR-code out to the working model.</p>
+<h3 id="9-build-it">9. Build it</h3>
+<p>Build the deck with whatever slide-building tool or skill this session offers, and follow that tool's own instructions for the mechanics. Produce a .pptx when the user asks for PowerPoint. Confirm the deck can be exported in the format the competition wants.</p>
+<h3 id="10-check-before-handing-over">10. Check before handing over</h3>
+<p>Render the finished deck and look at every slide. Score it on the rubric below and fix anything under 5 that can be fixed.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>1</th>
+<th>3</th>
+<th>5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Clarity</td>
+<td>Hard to follow</td>
+<td>Mostly clear</td>
+<td>Crisp and answer-first</td>
+</tr>
+<tr>
+<td>Feasibility</td>
+<td>Unclear execution</td>
+<td>Some plan</td>
+<td>Cost, owners and timeline clear</td>
+</tr>
+<tr>
+<td>Evidence</td>
+<td>Claims only</td>
+<td>Some backing</td>
+<td>Numbers and sources</td>
+</tr>
+<tr>
+<td>Story</td>
+<td>Disconnected</td>
+<td>Logical sequence</td>
+<td>Memorable narrative</td>
+</tr>
+<tr>
+<td>Q&amp;A readiness</td>
+<td>Weak backup</td>
+<td>Some answers</td>
+<td>Appendix-ready</td>
+</tr>
+</tbody>
+</table></div>
+<p>Then run the seven ways good ideas lose:</p>
+<ol>
+<li>Text overload: paragraphs where a visual or callout would do</li>
+<li>Solving the wrong ask: recheck objective, constraints and deliverables against the brief</li>
+<li>Weak feasibility: missing owners, timeline, costs or dependencies</li>
+<li>No quantification: no rupees, percentages, time or adoption range</li>
+<li>Framework dumping: frameworks that do not drive a decision</li>
+<li>No risks: top risks and mitigation absent</li>
+<li>Unprepared Q&amp;A: no appendix</li>
+</ol>
+<p>And the mechanics: slide count within the limit, every deliverable and judging criterion has a slide, no overflow or overlap, nothing below 8pt, numbers agree across slides, arithmetic re-run. Tell the user plainly about anything that did not pass and any placeholders left in.</p>
+<h2 id="critique-and-redesign-mode">Critique and redesign mode</h2>
+<p>Read the draft the way a reference deck is read (images plus numbers). Then:</p>
+<ol>
+<li>Write the ghost deck the draft actually has. Topic-only titles show up immediately.</li>
+<li>Score it on the rubric and the seven pitfalls. Give the user the three or four changes that matter most first, not a list of twenty.</li>
+<li>If asked to redesign, keep the user's analysis and numbers, restructure the storyline on the spine, and rebuild the slides. Say what was cut and why.</li>
+</ol>
+<h2 id="learn-mode">Learn mode</h2>
+<p>Turn each new reference deck into a deck card, then update the cross-deck patterns.</p>
+<ol>
+<li><strong>Look at every slide as an image.</strong> Layout, hierarchy and density are visual facts that extracted text hides. The script below renders the pages.</li>
+<li><strong>Get the numbers</strong> from the same script.</li>
+<li><strong>Write a deck card</strong> using the template in the library.</li>
+<li><strong>Update the cross-deck patterns.</strong> Promote something to a pattern only when it appears in two or more decks, or the user says "this is the one I want to match". If the user says how a deck placed, record it and weight winners more.</li>
+<li><strong>Persist it.</strong> The library lives in this file, so propose an updated version of this whole skill with the library rewritten and everything else unchanged, for the user to save. If this session cannot update a skill, give the user the updated library as a document to attach next time.</li>
+</ol>
+<p>Take structure, archetypes, layout, density and visual devices. Do not take another team's analysis, wording, numbers or branding.</p>
+<pre><code class="language-python"># usage: python3 read_deck.py deck.pdf out_dir     (needs pdfplumber and poppler's pdftoppm)
+import sys, os, statistics, subprocess
+import pdfplumber
+
+src, out = sys.argv[1], sys.argv[2]
+os.makedirs(out, exist_ok=True)
+subprocess.run([&quot;pdftoppm&quot;, &quot;-scale-to-x&quot;, &quot;1280&quot;, &quot;-scale-to-y&quot;, &quot;-1&quot;, &quot;-jpeg&quot;, src, os.path.join(out, &quot;s&quot;)], check=True)
+with pdfplumber.open(src) as pdf:
+    rows = []
+    for n, page in enumerate(pdf.pages, 1):
+        words = page.extract_words(extra_attrs=[&quot;size&quot;])
+        pts = [w[&quot;size&quot;] * 960 / float(page.width) for w in words]   # as if on a 13.33in-wide slide
+        rows.append((n, len(words), len(page.images), min(pts, default=0), statistics.median(pts) if pts else 0))
+content = [r for r in rows if r[1] &gt;= 60]                             # skips covers, dividers, thank-you
+print(f&quot;{len(rows)} slides, {len(content)} content slides, median {statistics.median(r[1] for r in content):.0f} words per content slide&quot;)
+for n, w, imgs, lo, med in rows:
+    print(f&quot;{n:&gt;2} | {w:&gt;4} words | {imgs:&gt;2} images | body {med:4.1f}pt | smallest {lo:4.1f}pt&quot;)
+</code></pre>
+<p>Convert a .pptx to PDF first and run the same script. Read titles, colours and layout from the rendered images; the script only counts.</p>
+<h2 id="pattern-library">Pattern library</h2>
+<p>Learned from the "Case Competition 101" session deck and nine reference decks. Placements were not given for any deck, so none is weighted as a winner; two are national-finale decks and are marked.</p>
+<h3 id="design-system">Design system</h3>
+<ul>
+<li><strong>Canvas</strong>: 16:9 in all nine decks.</li>
+<li><strong>Background</strong>: white or near-white in six of nine. Dark or textured backgrounds appear in three and cost legibility in each.</li>
+<li><strong>Palette</strong>: borrowed from the client. One dominant brand colour for the header band and label bars, one accent for highlights and outcomes, greys for containers. Seen: blue with yellow for an e-commerce client, black with orange for an EV brand, maroon for a state government, brown for a coffee exporter, purple for a consulting firm's own competition.</li>
+<li><strong>Type</strong>: one sans family per deck (Arial, Calibri, Poppins and Noto Sans all appear). Title 18-20pt bold, label bars 11-13pt bold, body 10-12pt, tables 9-10pt, sources 8pt. The reference decks often drop to 5-7pt inside tables and it cannot be read; hold 8pt as the floor and move the overflow to the appendix.</li>
+<li><strong>Header</strong>: full-width band in the brand colour carrying the title, optionally a one-line subtitle under it, client logo top-right.</li>
+<li><strong>Section tracker</strong>: a row of tabs or chevrons across the very top naming the deck's 5-6 sections, current one filled. Three of the nine decks and the worked example use it.</li>
+<li><strong>Label bars</strong>: every block on a slide is headed by a filled bar or chip with a short label.</li>
+<li><strong>Containers</strong>: thin outlines or light tints. Dashed outlines mark outcomes and emphasis.</li>
+<li><strong>Emphasis</strong>: bold the key phrase inside a sentence; colour only the number or the chosen option.</li>
+<li><strong>Small devices</strong>: icons beside labels, competitor and partner logos in place of their names, numbered circles for steps, arrows and chevrons to show flow between blocks.</li>
+<li><strong>Footer</strong>: tagline or logo bottom-left, numbered source footnotes, slide number.</li>
+</ul>
+<h3 id="cross-deck-patterns">Cross-deck patterns</h3>
+<ul>
+<li><strong>Arc</strong>: landscape and problem, who the customer is, the strategy in one framework, solutions, how to sell them, financials, roadmap, risks, thank you, appendix.</li>
+<li><strong>Density</strong>: eight of nine are dense reading decks. Content slides run 180-450 words, median about 300, in 3-5 labelled sections, with body text at 9-12pt.</li>
+<li><strong>Name the idea.</strong> Almost every deck gives its solution or campaign a brand name and uses it throughout. A named idea is easier to remember and refer back to.</li>
+<li><strong>Primary research is shown, not mentioned</strong>: survey size, quotes attributed to named personas, field photos, even video links. Three decks and the worked example do this, and it reads as effort and credibility.</li>
+<li><strong>A persona carries the story</strong> in two decks, from the problem slide to the outcome slide.</li>
+<li><strong>Targets are written as from and to</strong>: "CAC Rs 3,500 to Rs 1,800", "attendance 68% to 80-85%".</li>
+<li><strong>Solutions come in threes</strong>, each with its own what, how and quantified outcome.</li>
+<li><strong>Product cases show the product</strong>: mockups or sample screens in five decks.</li>
+<li><strong>Financials</strong>: an investment figure in the title or a headline tile, a unit-economics table or waterfall, a 3-5 year or 3-phase projection, break-even or payback stated.</li>
+<li><strong>Roadmap</strong>: three phases or years, each with focus, partners or owners, and expected outcome.</li>
+<li><strong>Risk</strong>: a risk and mitigation table in five decks.</li>
+<li><strong>Close</strong>: a thank-you slide with team names and photos, and a marked appendix holding model tables, assumptions, survey data and links to working files.</li>
+<li><strong>Titles</strong>: only two decks write full-sentence titles throughout; the rest mostly use topic labels. The playbook asks for the headline to be the insight, so write sentence titles.</li>
+</ul>
+<p><strong>Do not copy</strong>: neon colours on black; text under 8pt; spreadsheets pasted in as images; topic-only titles; a one-slide business model canvas at 800 words; background photos behind text; one slide stretched to cover four topics.</p>
+<h3 id="deck-cards">Deck cards</h3>
+<pre class="card"><code>Deck: Case Competition 101 worked example (winning deck, consulting firm's strategy competition, B2B e-commerce with Gen AI)
+Result: winner, per the session            Seen: 6 slides as excerpts
+Arc: market analysis &gt; solution strategy &gt; solution display &gt; push strategy &gt; 5-year roadmap &gt; appendix
+Layout: chevron tracker across the top; 4-6 blocks per slide under purple label bars; very dense
+What makes it work: stat strip of five numbers opens the deck; cost funnel ends in a one-line &quot;this shows&quot; takeaway;
+  solution rows (unique aspect, placement, challenges addressed, solution, impact); suitability matrix by segment
+Worth borrowing: roadmap with years across, product / sales / operations down, a rationale row, and a per-year
+  financial bar strip underneath; phone mockup annotated block by block
+Weak spots: topic-label titles; some text very small
+</code></pre>
+<pre class="card"><code>Deck: E-commerce campus challenge, national finale, business track (quick-commerce GTM, investment and expansion)
+Result: national finale deck               Slides: 31 (24 body, 4 appendix)   Words per content slide: about 310
+Arc: market rise &gt; consumer voices &gt; 7 segments &gt; 3-pillar GTM house &gt; city 1 (why, entry plan, product mix and
+  promos, model, investment) &gt; city 2 &gt; city 3 &gt; long-term expansion &gt; teaser question &gt; team &gt; appendix
+Layout: blue header band with full-sentence title; yellow label bars; 3 columns; logo and tagline bottom-left
+What makes it work: sentence titles carry the story; the strategy house returns as a divider with inactive pillars
+  greyed; every city gets the same slide sequence, so the reader learns the pattern once
+Worth borrowing: survey findings beside desk research on one slide; persona quotes; city comparison table with the
+  pick highlighted; investment slide with four headline tiles above a unit-economics waterfall; campaign hashtags
+Weak spots: appendix spreadsheets too small to read; several slides near 450 words
+</code></pre>
+<pre class="card"><code>Deck: Governance challenge, national finale (financial inclusion in a state, voice-based Gen AI assistant)
+Result: national finale deck               Slides: 36   Words per slide: median 34 (live presentation deck)
+Arc: persona's problem &gt; vicious cycle &gt; why AI &gt; the product &gt; journey &gt; government and private landscape in big
+  numbers &gt; primary research &gt; key problems &gt; how it covers the gaps &gt; channels &gt; dashboard &gt; architecture &gt;
+  launch campaign &gt; training &gt; impact metrics &gt; phased roadmap and cost &gt; vision &gt; appendix
+Layout: white, maroon accent, small-caps topic label top-left with a rule, logos top-right
+What makes it work: one farmer persona carried from problem to outcome; three big-number tiles per slide; QR code
+  to a working proof of concept; field interview photos
+Worth borrowing: the live-deck rhythm of one message per slide; phased roadmap with users, schemes and adoption
+  rate per phase; feasibility matrix and risk table held back for the appendix; appendix index with links
+Weak spots: topic titles; needs a presenter to make sense
+</code></pre>
+<pre class="card"><code>Deck: B-school marketing case (EV two-wheeler brand, four-year growth mission)
+Result: not stated                         Slides: 10 (5 body, 2 appendix)    Words per content slide: about 300
+Arc: current state, gaps, dilemma and thesis &gt; market size and competitor map &gt; STP and positioning &gt;
+  channels and campaigns &gt; financial projections &gt; appendix
+Layout: black header band with title and subtitle, client logo right; white body; orange accent; boxed sections
+What makes it work: slide 1 is a full executive summary ending in a quoted thesis and success metrics as from-to
+  pills; the whole argument fits five slides
+Worth borrowing: TAM, SAM, SOM pills; 2x2 with competitor logos; marketing mix table with an impact column;
+  channel cards with budget, CAC, ROI, purpose; campaign cards with target, objective, message, KPI;
+  appendix with KPI scorecard and a final recommendation box
+Weak spots: financial slide runs to 490 words
+</code></pre>
+<pre class="card"><code>Deck: B-school retail case (neighbourhood kirana store against quick commerce)
+Result: not stated                         Slides: 11 (5 body, 3 appendix)    Words per content slide: about 180
+Arc: problem chain &gt; problems mapped to a retail model &gt; three solutions &gt; product mix, festive offers and
+  community &gt; revenue and cost drivers &gt; appendix
+Layout: white; running case title on top; navy band under it with the slide's takeaway as a full sentence
+What makes it work: the cleanest of the dense decks; one named shopkeeper as the persona; each solution column
+  runs what, how, then a green dashed outcome box with the percentage saved
+Worth borrowing: problem chain in chevrons with a one-word label under each; competitor versus own benefits and
+  drawbacks; financial slide with two big-number tiles, one line chart and short/mid/long-term notes;
+  appendix tables built from a small survey, with the sample stated
+Weak spots: illustrated cover and divider add little
+</code></pre>
+<pre class="card"><code>Deck: NGO education strategy case (scale a learning programme tenfold in three years)
+Result: not stated                         Slides: 11 (7 body)                Words per content slide: about 380
+Arc: executive summary &gt; actionable strategy &gt; operating model &gt; donor and ROI &gt; project planning &gt; engagement
+Layout: dark navy; six-tab tracker on top, current tab yellow; orange label chips; green and red highlights
+What makes it work: the vision is four quantified targets; every challenge chip carries its target as from-to;
+  donors get a cost-per-outcome table, which is the right proof for a social case
+Worth borrowing: tab tracker; rollout table plus year cards (focus, partners, volunteers, expected outcomes);
+  before and after panel; risk 2x2 beside numbered mitigations
+Weak spots: light text on dark at 9pt is tiring; one slide at 560 words
+</code></pre>
+<pre class="card"><code>Deck: Product case (reader engagement for a financial newsletter app)
+Result: not stated                         Slides: 8 (6 body)                 Words per content slide: about 280
+Arc: company and competitor analysis &gt; growth through content &gt; podcast series &gt; gamification &gt; games &gt; prioritisation
+Layout: white with a blue-green gradient; five-tab tracker; blue label bars; dashed containers
+What makes it work: competitors scored on stated parameters, not asserted; features shown on phone mockups with
+  callouts naming the metric each one moves
+Worth borrowing: stat tiles for current traffic; metric table (type, description, how measured, expected outcome);
+  execution timeline; RICE table that ends in a highlighted decision sentence
+Weak spots: topic titles; SWOT adds little to the decision
+</code></pre>
+<pre class="card"><code>Deck: Finance case (commodity exporter, price and currency risk)
+Result: not stated                         Slides: 7 (5 body, references)     Words per content slide: about 445
+Arc: market analysis &gt; risk management strategy &gt; export strategy &gt; financial modelling &gt; recommendations &gt; references
+Layout: brown header band; a row of small charts on top, tables in the middle, text blocks below
+What makes it work: the quantitative depth a finance jury expects, with scenario tables, sensitivity, a simulation
+  and value-at-risk, and an insight box under each analysis
+Worth borrowing: chart strip across the top of a slide; scenario tables with with-and-without comparison;
+  recommendation table (focus area, recommendation, expected impact) beside key success metrics; references slide
+Weak spots: densest deck in the set, with text down to 3pt over a background image; topic titles
+</code></pre>
+<pre class="card"><code>Deck: Product requirements case (retrofit kit and app for a home appliance)
+Result: not stated                         Slides: 14                         Words per content slide: about 190
+Arc: market overview and challenge &gt; features and user journey &gt; personas &gt; business model &gt; system and
+  environment requirements &gt; competitors &gt; UX screens
+Layout: white, blue and grey; chevron headers; chevron tracker in the requirements section
+What makes it work: current journey and proposed journey side by side with the feature that bridges each step;
+  four slides of real app screens
+Worth borrowing: comparison table with ticks, crosses and price; persona cards against activity, interest, opinion
+Weak spots: no financials; business model canvas at 800 words on one slide
+</code></pre>
+<pre class="card"><code>Deck: Leadership case, round 2 (new learning platform, monetisation and rollout)
+Result: not stated                         Slides: 6 (5 body)                 Words per content slide: about 305
+Arc: challenges and offering &gt; how it works &gt; monetisation and segments &gt; marketing and implementation &gt;
+  risk and financial projections
+Layout: black background, orange header strip, teal, blue and red blocks
+What makes it work: covers the full spine in five slides; tables do most of the work
+Worth borrowing: feature, description, value-add table; revenue stream table with price points and examples;
+  milestones table; three-year projection with revenue share by stream
+Weak spots: neon on black is hard to read and looks unprofessional; topic titles
+</code></pre>
+<pre class="card"><code>Template for a new card
+Deck: &lt;competition type, client or theme&gt;            Result: &lt;winner / finalist / not stated&gt;
+Slides: &lt;n (body, appendix)&gt;   Words per content slide: &lt;n&gt;
+Arc: &lt;sections in order&gt;
+Layout: &lt;header, colours, grid&gt;
+What makes it work: &lt;2-3 specifics&gt;
+Worth borrowing: &lt;layouts or devices&gt;
+Weak spots: &lt;what not to copy&gt;
+</code></pre>
+</article>
+
+  <details id="raw">
+    <summary>Raw skill file (SKILL.md)</summary>
+    <textarea id="raw-text" readonly aria-label="Raw skill file" spellcheck="false">---
+name: case-comp-deck-designer
+description: Design case-competition slide decks using the user&#x27;s case comp playbook and a pattern library learned from their reference decks. Use for any case comp, consulting challenge or pitch deck - building, restructuring, critiquing, or learning from new decks.
+---
+
+# Case-comp deck designer
+
+Design decks for case competitions (B-school case comps, live consulting challenges, corporate pitch rounds) so they read like the decks that reach finals: one argument, proven slide by slide, at consulting density.
+
+Two things drive every decision here:
+
+- **The playbook** (Build mode below): how to decode a brief, build the argument and lay out the deck. It comes from the user&#x27;s &quot;Case Competition 101&quot; session.
+- **The pattern library** (end of this file): what the user&#x27;s reference decks actually look like, with one card per deck. When the library and a general default disagree, the library wins, because it is the user&#x27;s taste written down.
+
+## Who the deck is for
+
+A judge screening many submissions, giving each deck a minute or two, often with no presenter in the room. Judges reward **sellability**: an idea clear enough to understand, credible enough to trust and sharp enough to remember. It breaks into five tests, and every slide should help at least one:
+
+| Test | The judge is asking |
+|---|---|
+| Clarity | Can I follow the logic fast? |
+| Feasibility | Would this survive real constraints: cost, owners, time? |
+| Innovation | Is the idea distinctive and useful? |
+| Evidence | Are the numbers and assumptions defensible? |
+| Storytelling | Does the deck build belief slide by slide? |
+
+The clearest, most feasible, most sellable idea wins, not the cleverest one. When a choice comes up between showing more analysis and making the recommendation easier to believe, choose belief.
+
+## Pick the mode
+
+| The user... | Mode |
+|---|---|
+| gives a case, problem statement, analysis or rough notes and wants a deck | **Build** |
+| gives their own draft deck and wants it better | **Critique and redesign** |
+| attaches finished decks and says &quot;learn from these&quot; or &quot;add this to the library&quot; | **Learn** |
+
+A request can be two of these in sequence (learn from three decks, then build one). Learn first.
+
+## Build mode
+
+### 1. Decode the brief
+
+A deck that answers the wrong question loses however good it looks, so pin these five down in writing before anything else. Read what the user attached first, then ask only for what is missing.
+
+1. **Core objective**: the one outcome the organiser wants (&quot;grow B2B e-commerce using Gen AI&quot;).
+2. **Context versus constraints**: what is given about the situation, and what limits the answer (budget, adoption inertia, regulation).
+3. **Deliverables**: exactly what was asked for (a solution, a GTM plan, 5-year financials). Each one needs a slide.
+4. **Scope**: market, geography, time frame, what is out.
+5. **Unknowns**: what the brief does not say and research or assumptions must fill.
+
+Also get the rules that change the deck: slide limit and whether the appendix counts, judging criteria and weights, file format, whether it will be presented or only read, and the client&#x27;s brand. If the user is not around, assume a read-only 16:9 PDF, state the assumptions at the top of the reply and carry on.
+
+How the brief is written changes how much to assume:
+
+| Brief type | Handle it by |
+|---|---|
+| Detailed, lots of data | Selecting. Use the three or four facts that drive the answer and leave the rest out. |
+| Minimalist | Stating assumptions early and visibly. |
+| Hidden identity | Working out who the company is from the clues and verifying with public data. |
+| Fictional | Anchoring every idea in a real parallel. |
+| Hybrid | Separating real facts from invented conditions on the slide. |
+| Open innovation | Defining the problem yourself before solving it. That definition is slide one. |
+
+The kind of case decides which proof the judges expect to see:
+
+| Case type | Proof that has to be on the slides |
+|---|---|
+| Strategy | Market entry or growth logic, options weighed, portfolio choices |
+| Marketing | Segmentation and targeting, positioning, funnel, channel budget with CAC and ROI |
+| B-plan | TAM, SAM, SOM, business model, unit economics |
+| Operations | Where the bottleneck is, cost or time saved, process before and after |
+| Social / ESG | Stakeholder adoption, measurable impact, cost per outcome, sustainability |
+| Product / open innovation | Problem definition, user journey, product mockup, implementation logic |
+| Finance | Scenarios, sensitivity, risk quantified, hedging or funding plan |
+
+### 2. Pick the deck format
+
+The reference decks come in two shapes (eight are reading decks, one is a live finale deck), and mixing them up is costly, so decide before writing slides.
+
+| | Submission deck (read without you) | Live finale deck (presented) |
+|---|---|---|
+| Length | 5-8 content slides plus appendix | 25-35 slides |
+| Words per content slide | 250-400, in 3-5 labelled sections | 30-120 on most slides |
+| Each slide | A complete mini-argument with its proof | One message or one big number, built up over several slides |
+| Devices | Section tracker, tables, charts, outcome boxes | Persona story, big-number tiles, product demo, QR code |
+| Dense slides | All of them | Only feasibility, risk and cost, mostly in the appendix |
+
+Default to the submission deck unless the user says it will be presented live.
+
+### 3. Build the argument
+
+**Lead with the answer.** Write the pyramid before any slide:
+
+- The **question** the judges asked.
+- The **answer** in one decision-ready sentence: what, for whom, how and by when.
+- **Three reasons**, mutually exclusive and together complete (for example customer pull, financial viability, execution readiness).
+- **Evidence** under each reason that survives a follow-up question.
+
+Test it by reading only the top line of each box, top to bottom. If that still argues the case, the pyramid holds.
+
+**Turn data into insight.** Every number on a slide should complete this chain, or it is decoration:
+
+- Data: &quot;Of every Rs 100 spent, Rs 46 goes to the salesman.&quot;
+- Insight: &quot;Sales cost is the biggest piece of the spend.&quot;
+- So what: &quot;A tech-enabled ordering channel attacks the largest cost line.&quot;
+
+**Structure the problem.** Name the north-star metric, then split what holds it back into branches with no overlap and no gap (revenue, cost, customer, execution is a common first cut). Test which branch matters most and spend the deck there.
+
+**Prioritise.** Nobody can solve everything, and judges value depth over breadth. Place the candidate ideas on impact against feasibility, keep the top two or three, and put the detailed scoring (impact, cost, time, scalability, risk, differentiation) in the appendix.
+
+**Make it a solution tree.** North star, then two or three levers, then initiatives under each. An initiative earns a place on a slide only when it has an owner, a timeline, a cost and a KPI.
+
+**Use frameworks as tools.** A framework belongs on a slide only if it changes a decision or produces a number. Use it to organise the thinking and let the audience barely notice it. A slide titled with the framework&#x27;s name is usually a sign it is filler.
+
+### 4. Lay out the spine
+
+The winning spine has six parts. Under a tight limit each is one slide; with more room, the solution and the selling plan get more.
+
+1. **Problem and insight**: the tension and the one finding that reframes it
+2. **Solution overview**: the answer and its two or three levers
+3. **How to sell the solution**: go-to-market, adoption, how it gets past the market&#x27;s resistance
+4. **Financials and ROI**: what it costs, what it returns, when it pays back
+5. **Roadmap**: phases, owners, milestones
+6. **Q&amp;A readiness**: risks and mitigation in the deck, backup in the appendix
+
+Then:
+
+- Write the **ghost deck**: slide titles only, in order. Read top to bottom they should be the whole argument. Think of each slide as an episode that leaves the reader wanting the next one.
+- Map slides to the **judging criteria**. A criterion worth 30% with no slide behind it is the most common way good analysis loses.
+- Show the user the ghost deck before building when they are present. Changing a title costs nothing; changing a built slide costs a rebuild.
+
+For a presented deck, the opening two minutes follow a fixed order: one line of context and tension, one sharp insight or surprising number, the recommendation in one sentence, then how the deck will prove it.
+
+### 5. Design each slide
+
+**One message, dense proof.** The playbook says one idea per slide and the reference decks carry 300 words a slide. Both are true: each slide makes one claim in its title, and everything below it is organised evidence for that claim. Density comes from tables, charts and labelled blocks, never from paragraphs. If a slide has two messages, split it.
+
+**Anatomy of a content slide** in a submission deck:
+
+- **Header band** in the client&#x27;s brand colour with the title in it, client logo at the right.
+- **Action title**: a full sentence stating the conclusion, two lines at most, with a number where one exists. &quot;Chennai resists quick commerce but offers a first-mover advantage&quot;, not &quot;Chennai market analysis&quot;.
+- **Section tracker** across the top when the deck has four or more sections, with the current one filled.
+- **3-5 sections**, each headed by a filled label bar. The eye should travel left to right through a complete story: what is wrong, what we do, what it achieves.
+- **Proof beside the claim**: the table, chart or calculation sits next to the conclusion it supports.
+- **Outcome box** at the end of each solution block: the quantified result, visually distinct (&quot;about 80% of time spent on inventory saved&quot;).
+- **Source footnotes**, numbered, in small type, and a slide number.
+
+**A solution slide** should answer these in the order the eye meets them: what the product looks like (a mockup or minimum viable version), how it fits into the user&#x27;s day, what impact it makes, which pain point it addresses, what value it adds, and why it is practically feasible.
+
+Pick the archetype from what the slide has to prove. All of these appear in the reference decks:
+
+| The slide has to show | Archetype |
+|---|---|
+| The whole answer on one page | Current state, then gaps, then thesis and success metrics |
+| The market and why now | Stat strip of 4-5 big numbers above primary research and desk research side by side |
+| That real customers feel the problem | Quotes from named personas, survey size stated, field photos |
+| Who to target | Segmentation funnel narrowing to profile cards, the target marked |
+| How big the prize is | TAM, SAM, SOM as nested pills with the numbers |
+| How we compare | 2x2 positioning map, or a feature matrix with ticks and crosses and competitor logos |
+| Which market or option to pick | Comparison table with the chosen column highlighted |
+| The strategy at a glance | Strategy house: vision on top, 3 pillars, objective and enablers under each. Reuse it as the divider for each section with the other pillars greyed out. |
+| What we recommend | Row per solution: what is unique, where it sits, challenge addressed, how it works, impact |
+| How the product works | Annotated phone mockup with callouts, or user journey before and after |
+| That the solution fits each segment | Suitability matrix, segments across, solutions down, one-line reason in each cell |
+| How we take it to market | Channel cards, each with budget, CAC, ROI and purpose |
+| Whether it pays | Headline number tiles, then a unit-economics waterfall or table with the total row highlighted |
+| How it rolls out | Years or phases across, functions down (product, sales, operations), a rationale row, and the financials for each period underneath |
+| What could go wrong | Risk, mitigation and metric table, or a probability-impact 2x2 |
+| What changes | Before and after, with targets written as from and to (&quot;attendance 68% to 85%&quot;) |
+| Why this idea first | Scoring table (for example RICE) with the chosen rows highlighted |
+| How robust the numbers are | Scenario and sensitivity tables |
+
+### 6. Apply the design system
+
+Use the library&#x27;s design system at the end of this file. If the user names a client or brand, take the palette from that brand. The reference decks do this consistently: the deck looks like it belongs to the company it is written for.
+
+### 7. Prove it numerically
+
+Numbers turn a pitch from aspirational to defensible. The financial slide should cover as many of these as the case allows: unit economics (price minus variable cost), investment needed split into one-time and recurring, break-even (how and when cost is recovered), payback period, ROI, and a multi-year view tied to the roadmap. Replace adjectives with rupees, percentages, time or volume everywhere, and show units, scope, time frame and source for each figure.
+
+Every number needs a source or the label &quot;assumption&quot;. Never invent data to fill a chart. When a figure is missing, estimate it with visible logic and label it an estimate, or leave a marked placeholder and tell the user. Judges probe numbers first, and one unsupported figure discredits the rest.
+
+### 8. Prepare the appendix
+
+Judges have unspoken doubts in a predictable order. Have backup for each, answer-first and easy to find:
+
+1. Assumptions and data quality: source table with dates, sensitivity
+2. Unit economics and hidden costs: cost build-up, buffers, exclusions
+3. Feasibility and execution: owners, dependencies
+4. Alternatives and trade-offs: why this option over the others
+5. Risk, compliance and ethics, including any use of AI
+
+When space is short, keep three: assumptions, sensitivity, risk mitigation. The reference decks keep a clearly marked appendix after the main story, and three of them link or QR-code out to the working model.
+
+### 9. Build it
+
+Build the deck with whatever slide-building tool or skill this session offers, and follow that tool&#x27;s own instructions for the mechanics. Produce a .pptx when the user asks for PowerPoint. Confirm the deck can be exported in the format the competition wants.
+
+### 10. Check before handing over
+
+Render the finished deck and look at every slide. Score it on the rubric below and fix anything under 5 that can be fixed.
+
+| Criterion | 1 | 3 | 5 |
+|---|---|---|---|
+| Clarity | Hard to follow | Mostly clear | Crisp and answer-first |
+| Feasibility | Unclear execution | Some plan | Cost, owners and timeline clear |
+| Evidence | Claims only | Some backing | Numbers and sources |
+| Story | Disconnected | Logical sequence | Memorable narrative |
+| Q&amp;A readiness | Weak backup | Some answers | Appendix-ready |
+
+Then run the seven ways good ideas lose:
+
+1. Text overload: paragraphs where a visual or callout would do
+2. Solving the wrong ask: recheck objective, constraints and deliverables against the brief
+3. Weak feasibility: missing owners, timeline, costs or dependencies
+4. No quantification: no rupees, percentages, time or adoption range
+5. Framework dumping: frameworks that do not drive a decision
+6. No risks: top risks and mitigation absent
+7. Unprepared Q&amp;A: no appendix
+
+And the mechanics: slide count within the limit, every deliverable and judging criterion has a slide, no overflow or overlap, nothing below 8pt, numbers agree across slides, arithmetic re-run. Tell the user plainly about anything that did not pass and any placeholders left in.
+
+## Critique and redesign mode
+
+Read the draft the way a reference deck is read (images plus numbers). Then:
+
+1. Write the ghost deck the draft actually has. Topic-only titles show up immediately.
+2. Score it on the rubric and the seven pitfalls. Give the user the three or four changes that matter most first, not a list of twenty.
+3. If asked to redesign, keep the user&#x27;s analysis and numbers, restructure the storyline on the spine, and rebuild the slides. Say what was cut and why.
+
+## Learn mode
+
+Turn each new reference deck into a deck card, then update the cross-deck patterns.
+
+1. **Look at every slide as an image.** Layout, hierarchy and density are visual facts that extracted text hides. The script below renders the pages.
+2. **Get the numbers** from the same script.
+3. **Write a deck card** using the template in the library.
+4. **Update the cross-deck patterns.** Promote something to a pattern only when it appears in two or more decks, or the user says &quot;this is the one I want to match&quot;. If the user says how a deck placed, record it and weight winners more.
+5. **Persist it.** The library lives in this file, so propose an updated version of this whole skill with the library rewritten and everything else unchanged, for the user to save. If this session cannot update a skill, give the user the updated library as a document to attach next time.
+
+Take structure, archetypes, layout, density and visual devices. Do not take another team&#x27;s analysis, wording, numbers or branding.
+
+```python
+# usage: python3 read_deck.py deck.pdf out_dir     (needs pdfplumber and poppler&#x27;s pdftoppm)
+import sys, os, statistics, subprocess
+import pdfplumber
+
+src, out = sys.argv[1], sys.argv[2]
+os.makedirs(out, exist_ok=True)
+subprocess.run([&quot;pdftoppm&quot;, &quot;-scale-to-x&quot;, &quot;1280&quot;, &quot;-scale-to-y&quot;, &quot;-1&quot;, &quot;-jpeg&quot;, src, os.path.join(out, &quot;s&quot;)], check=True)
+with pdfplumber.open(src) as pdf:
+    rows = []
+    for n, page in enumerate(pdf.pages, 1):
+        words = page.extract_words(extra_attrs=[&quot;size&quot;])
+        pts = [w[&quot;size&quot;] * 960 / float(page.width) for w in words]   # as if on a 13.33in-wide slide
+        rows.append((n, len(words), len(page.images), min(pts, default=0), statistics.median(pts) if pts else 0))
+content = [r for r in rows if r[1] &gt;= 60]                             # skips covers, dividers, thank-you
+print(f&quot;{len(rows)} slides, {len(content)} content slides, median {statistics.median(r[1] for r in content):.0f} words per content slide&quot;)
+for n, w, imgs, lo, med in rows:
+    print(f&quot;{n:&gt;2} | {w:&gt;4} words | {imgs:&gt;2} images | body {med:4.1f}pt | smallest {lo:4.1f}pt&quot;)
+```
+
+Convert a .pptx to PDF first and run the same script. Read titles, colours and layout from the rendered images; the script only counts.
+
+## Pattern library
+
+Learned from the &quot;Case Competition 101&quot; session deck and nine reference decks. Placements were not given for any deck, so none is weighted as a winner; two are national-finale decks and are marked.
+
+### Design system
+
+- **Canvas**: 16:9 in all nine decks.
+- **Background**: white or near-white in six of nine. Dark or textured backgrounds appear in three and cost legibility in each.
+- **Palette**: borrowed from the client. One dominant brand colour for the header band and label bars, one accent for highlights and outcomes, greys for containers. Seen: blue with yellow for an e-commerce client, black with orange for an EV brand, maroon for a state government, brown for a coffee exporter, purple for a consulting firm&#x27;s own competition.
+- **Type**: one sans family per deck (Arial, Calibri, Poppins and Noto Sans all appear). Title 18-20pt bold, label bars 11-13pt bold, body 10-12pt, tables 9-10pt, sources 8pt. The reference decks often drop to 5-7pt inside tables and it cannot be read; hold 8pt as the floor and move the overflow to the appendix.
+- **Header**: full-width band in the brand colour carrying the title, optionally a one-line subtitle under it, client logo top-right.
+- **Section tracker**: a row of tabs or chevrons across the very top naming the deck&#x27;s 5-6 sections, current one filled. Three of the nine decks and the worked example use it.
+- **Label bars**: every block on a slide is headed by a filled bar or chip with a short label.
+- **Containers**: thin outlines or light tints. Dashed outlines mark outcomes and emphasis.
+- **Emphasis**: bold the key phrase inside a sentence; colour only the number or the chosen option.
+- **Small devices**: icons beside labels, competitor and partner logos in place of their names, numbered circles for steps, arrows and chevrons to show flow between blocks.
+- **Footer**: tagline or logo bottom-left, numbered source footnotes, slide number.
+
+### Cross-deck patterns
+
+- **Arc**: landscape and problem, who the customer is, the strategy in one framework, solutions, how to sell them, financials, roadmap, risks, thank you, appendix.
+- **Density**: eight of nine are dense reading decks. Content slides run 180-450 words, median about 300, in 3-5 labelled sections, with body text at 9-12pt.
+- **Name the idea.** Almost every deck gives its solution or campaign a brand name and uses it throughout. A named idea is easier to remember and refer back to.
+- **Primary research is shown, not mentioned**: survey size, quotes attributed to named personas, field photos, even video links. Three decks and the worked example do this, and it reads as effort and credibility.
+- **A persona carries the story** in two decks, from the problem slide to the outcome slide.
+- **Targets are written as from and to**: &quot;CAC Rs 3,500 to Rs 1,800&quot;, &quot;attendance 68% to 80-85%&quot;.
+- **Solutions come in threes**, each with its own what, how and quantified outcome.
+- **Product cases show the product**: mockups or sample screens in five decks.
+- **Financials**: an investment figure in the title or a headline tile, a unit-economics table or waterfall, a 3-5 year or 3-phase projection, break-even or payback stated.
+- **Roadmap**: three phases or years, each with focus, partners or owners, and expected outcome.
+- **Risk**: a risk and mitigation table in five decks.
+- **Close**: a thank-you slide with team names and photos, and a marked appendix holding model tables, assumptions, survey data and links to working files.
+- **Titles**: only two decks write full-sentence titles throughout; the rest mostly use topic labels. The playbook asks for the headline to be the insight, so write sentence titles.
+
+**Do not copy**: neon colours on black; text under 8pt; spreadsheets pasted in as images; topic-only titles; a one-slide business model canvas at 800 words; background photos behind text; one slide stretched to cover four topics.
+
+### Deck cards
+
+```
+Deck: Case Competition 101 worked example (winning deck, consulting firm&#x27;s strategy competition, B2B e-commerce with Gen AI)
+Result: winner, per the session            Seen: 6 slides as excerpts
+Arc: market analysis &gt; solution strategy &gt; solution display &gt; push strategy &gt; 5-year roadmap &gt; appendix
+Layout: chevron tracker across the top; 4-6 blocks per slide under purple label bars; very dense
+What makes it work: stat strip of five numbers opens the deck; cost funnel ends in a one-line &quot;this shows&quot; takeaway;
+  solution rows (unique aspect, placement, challenges addressed, solution, impact); suitability matrix by segment
+Worth borrowing: roadmap with years across, product / sales / operations down, a rationale row, and a per-year
+  financial bar strip underneath; phone mockup annotated block by block
+Weak spots: topic-label titles; some text very small
+```
+
+```
+Deck: E-commerce campus challenge, national finale, business track (quick-commerce GTM, investment and expansion)
+Result: national finale deck               Slides: 31 (24 body, 4 appendix)   Words per content slide: about 310
+Arc: market rise &gt; consumer voices &gt; 7 segments &gt; 3-pillar GTM house &gt; city 1 (why, entry plan, product mix and
+  promos, model, investment) &gt; city 2 &gt; city 3 &gt; long-term expansion &gt; teaser question &gt; team &gt; appendix
+Layout: blue header band with full-sentence title; yellow label bars; 3 columns; logo and tagline bottom-left
+What makes it work: sentence titles carry the story; the strategy house returns as a divider with inactive pillars
+  greyed; every city gets the same slide sequence, so the reader learns the pattern once
+Worth borrowing: survey findings beside desk research on one slide; persona quotes; city comparison table with the
+  pick highlighted; investment slide with four headline tiles above a unit-economics waterfall; campaign hashtags
+Weak spots: appendix spreadsheets too small to read; several slides near 450 words
+```
+
+```
+Deck: Governance challenge, national finale (financial inclusion in a state, voice-based Gen AI assistant)
+Result: national finale deck               Slides: 36   Words per slide: median 34 (live presentation deck)
+Arc: persona&#x27;s problem &gt; vicious cycle &gt; why AI &gt; the product &gt; journey &gt; government and private landscape in big
+  numbers &gt; primary research &gt; key problems &gt; how it covers the gaps &gt; channels &gt; dashboard &gt; architecture &gt;
+  launch campaign &gt; training &gt; impact metrics &gt; phased roadmap and cost &gt; vision &gt; appendix
+Layout: white, maroon accent, small-caps topic label top-left with a rule, logos top-right
+What makes it work: one farmer persona carried from problem to outcome; three big-number tiles per slide; QR code
+  to a working proof of concept; field interview photos
+Worth borrowing: the live-deck rhythm of one message per slide; phased roadmap with users, schemes and adoption
+  rate per phase; feasibility matrix and risk table held back for the appendix; appendix index with links
+Weak spots: topic titles; needs a presenter to make sense
+```
+
+```
+Deck: B-school marketing case (EV two-wheeler brand, four-year growth mission)
+Result: not stated                         Slides: 10 (5 body, 2 appendix)    Words per content slide: about 300
+Arc: current state, gaps, dilemma and thesis &gt; market size and competitor map &gt; STP and positioning &gt;
+  channels and campaigns &gt; financial projections &gt; appendix
+Layout: black header band with title and subtitle, client logo right; white body; orange accent; boxed sections
+What makes it work: slide 1 is a full executive summary ending in a quoted thesis and success metrics as from-to
+  pills; the whole argument fits five slides
+Worth borrowing: TAM, SAM, SOM pills; 2x2 with competitor logos; marketing mix table with an impact column;
+  channel cards with budget, CAC, ROI, purpose; campaign cards with target, objective, message, KPI;
+  appendix with KPI scorecard and a final recommendation box
+Weak spots: financial slide runs to 490 words
+```
+
+```
+Deck: B-school retail case (neighbourhood kirana store against quick commerce)
+Result: not stated                         Slides: 11 (5 body, 3 appendix)    Words per content slide: about 180
+Arc: problem chain &gt; problems mapped to a retail model &gt; three solutions &gt; product mix, festive offers and
+  community &gt; revenue and cost drivers &gt; appendix
+Layout: white; running case title on top; navy band under it with the slide&#x27;s takeaway as a full sentence
+What makes it work: the cleanest of the dense decks; one named shopkeeper as the persona; each solution column
+  runs what, how, then a green dashed outcome box with the percentage saved
+Worth borrowing: problem chain in chevrons with a one-word label under each; competitor versus own benefits and
+  drawbacks; financial slide with two big-number tiles, one line chart and short/mid/long-term notes;
+  appendix tables built from a small survey, with the sample stated
+Weak spots: illustrated cover and divider add little
+```
+
+```
+Deck: NGO education strategy case (scale a learning programme tenfold in three years)
+Result: not stated                         Slides: 11 (7 body)                Words per content slide: about 380
+Arc: executive summary &gt; actionable strategy &gt; operating model &gt; donor and ROI &gt; project planning &gt; engagement
+Layout: dark navy; six-tab tracker on top, current tab yellow; orange label chips; green and red highlights
+What makes it work: the vision is four quantified targets; every challenge chip carries its target as from-to;
+  donors get a cost-per-outcome table, which is the right proof for a social case
+Worth borrowing: tab tracker; rollout table plus year cards (focus, partners, volunteers, expected outcomes);
+  before and after panel; risk 2x2 beside numbered mitigations
+Weak spots: light text on dark at 9pt is tiring; one slide at 560 words
+```
+
+```
+Deck: Product case (reader engagement for a financial newsletter app)
+Result: not stated                         Slides: 8 (6 body)                 Words per content slide: about 280
+Arc: company and competitor analysis &gt; growth through content &gt; podcast series &gt; gamification &gt; games &gt; prioritisation
+Layout: white with a blue-green gradient; five-tab tracker; blue label bars; dashed containers
+What makes it work: competitors scored on stated parameters, not asserted; features shown on phone mockups with
+  callouts naming the metric each one moves
+Worth borrowing: stat tiles for current traffic; metric table (type, description, how measured, expected outcome);
+  execution timeline; RICE table that ends in a highlighted decision sentence
+Weak spots: topic titles; SWOT adds little to the decision
+```
+
+```
+Deck: Finance case (commodity exporter, price and currency risk)
+Result: not stated                         Slides: 7 (5 body, references)     Words per content slide: about 445
+Arc: market analysis &gt; risk management strategy &gt; export strategy &gt; financial modelling &gt; recommendations &gt; references
+Layout: brown header band; a row of small charts on top, tables in the middle, text blocks below
+What makes it work: the quantitative depth a finance jury expects, with scenario tables, sensitivity, a simulation
+  and value-at-risk, and an insight box under each analysis
+Worth borrowing: chart strip across the top of a slide; scenario tables with with-and-without comparison;
+  recommendation table (focus area, recommendation, expected impact) beside key success metrics; references slide
+Weak spots: densest deck in the set, with text down to 3pt over a background image; topic titles
+```
+
+```
+Deck: Product requirements case (retrofit kit and app for a home appliance)
+Result: not stated                         Slides: 14                         Words per content slide: about 190
+Arc: market overview and challenge &gt; features and user journey &gt; personas &gt; business model &gt; system and
+  environment requirements &gt; competitors &gt; UX screens
+Layout: white, blue and grey; chevron headers; chevron tracker in the requirements section
+What makes it work: current journey and proposed journey side by side with the feature that bridges each step;
+  four slides of real app screens
+Worth borrowing: comparison table with ticks, crosses and price; persona cards against activity, interest, opinion
+Weak spots: no financials; business model canvas at 800 words on one slide
+```
+
+```
+Deck: Leadership case, round 2 (new learning platform, monetisation and rollout)
+Result: not stated                         Slides: 6 (5 body)                 Words per content slide: about 305
+Arc: challenges and offering &gt; how it works &gt; monetisation and segments &gt; marketing and implementation &gt;
+  risk and financial projections
+Layout: black background, orange header strip, teal, blue and red blocks
+What makes it work: covers the full spine in five slides; tables do most of the work
+Worth borrowing: feature, description, value-add table; revenue stream table with price points and examples;
+  milestones table; three-year projection with revenue share by stream
+Weak spots: neon on black is hard to read and looks unprofessional; topic titles
+```
+
+```
+Template for a new card
+Deck: &lt;competition type, client or theme&gt;            Result: &lt;winner / finalist / not stated&gt;
+Slides: &lt;n (body, appendix)&gt;   Words per content slide: &lt;n&gt;
+Arc: &lt;sections in order&gt;
+Layout: &lt;header, colours, grid&gt;
+What makes it work: &lt;2-3 specifics&gt;
+Worth borrowing: &lt;layouts or devices&gt;
+Weak spots: &lt;what not to copy&gt;
+```
+</textarea>
+  </details>
+
+  <footer>Reference decks keep their owners' content. Borrow the structure, write your own argument.</footer>
+</main>
+
+<script>
+(function () {
+  var status = document.getElementById('status');
+  var rawBox = document.getElementById('raw-text');
+  var details = document.getElementById('raw');
+  function say(msg) { status.textContent = msg; }
+  function copy(text, onFail) {
+    var done = function () { say('Copied.'); };
+    try {
+      navigator.clipboard.writeText(text).then(done, onFail);
+    } catch (e) { onFail(); }
+  }
+  document.getElementById('copy-skill').addEventListener('click', function () {
+    copy(rawBox.value, function () {
+      details.open = true;
+      rawBox.focus();
+      rawBox.select();
+      say('Copying is blocked here. The text is selected below: press Ctrl+C or Cmd+C.');
+    });
+  });
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var label = btn.textContent;
+      copy(btn.getAttribute('data-copy'), function () {
+        var r = document.createRange();
+        r.selectNodeContents(btn.previousElementSibling);
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        say('Copying is blocked here. The prompt is selected: press Ctrl+C or Cmd+C.');
+      });
+      btn.textContent = 'Copied';
+      setTimeout(function () { btn.textContent = label; }, 1500);
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -11,7 +11,8 @@ Planned work, grouped into small projects. Ticked items are done; `LOG.md` has t
 - [ ] List topic-only titles (no verb and no number)
 - [ ] Draft a deck card from the measurements, using the template in the skill
 - [ ] Rubric scorer: enter 1, 3 or 5 on the five criteria and get a report with the weakest first
-- [ ] Publish the skill as a static page
+- [x] Build the skill's web page from `SKILL.md`
+- [ ] Serve the skill's page with GitHub Pages
 
 ## Product analytics
 
