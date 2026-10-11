@@ -1,0 +1,5 @@
+pdfplumber>=0.11
+
+# tests only
+pytest>=8
+reportlab>=4
