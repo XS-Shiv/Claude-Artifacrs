@@ -182,3 +182,64 @@ def test_cli_rejects_a_missing_file(tmp_path, capsys):
     with pytest.raises(SystemExit) as exit_info:
         dr.main([str(tmp_path / "missing.pdf")])
     assert exit_info.value.code == 2
+
+
+def test_records_round_sizes_and_carry_flags():
+    deck = [SlideStats(1, 4, 1, 40.0, 40.0), SlideStats(2, 310, 3, 10.666, 6.666)]
+    assert dr.to_records(deck) == [
+        {"slide": 1, "words": 4, "images": 1, "body_pt": 40.0, "smallest_pt": 40.0,
+         "content": False, "flags": []},
+        {"slide": 2, "words": 310, "images": 3, "body_pt": 10.7, "smallest_pt": 6.7,
+         "content": True, "flags": ["type at 6.7pt, under the 8pt floor"]},
+    ]
+
+
+def test_json_has_summary_limits_and_flagged_slides():
+    import json
+
+    deck = [SlideStats(1, 4, 0, 40.0, 40.0), SlideStats(2, 500, 0, 9.0, 9.0)]
+    doc = json.loads(dr.format_json("a.pdf", deck, max_words=450))
+    assert doc["deck"] == "a.pdf"
+    assert (doc["slides"], doc["content_slides"], doc["median_words"]) == (2, 1, 500)
+    assert doc["limits"] == {"min_type_pt": 8.0, "max_words": 450}
+    assert doc["flagged_slides"] == [2]
+    assert len(doc["per_slide"]) == 2
+
+
+def test_json_median_is_null_for_a_cover_only_deck():
+    import json
+
+    assert json.loads(dr.format_json("c.pdf", [SlideStats(1, 5, 0, 30, 30)]))["median_words"] is None
+
+
+def test_csv_has_a_header_and_one_row_per_slide():
+    deck = [SlideStats(1, 4, 1, 40.0, 40.0), SlideStats(2, 560, 0, 9.0, 5.0)]
+    assert dr.format_csv("a.pdf", deck).splitlines() == [
+        "deck,slide,words,images,body_pt,smallest_pt,content,flags",
+        "a.pdf,1,4,1,40.0,40.0,False,",
+        'a.pdf,2,560,0,9.0,5.0,True,"type at 5.0pt, under the 8pt floor; 560 words, over the 450-word limit"',
+    ]
+
+
+def test_csv_header_can_be_left_out_to_stack_decks():
+    out = dr.format_csv("b.pdf", [SlideStats(1, 4, 0, 40.0, 40.0)], header=False)
+    assert out == "b.pdf,1,4,0,40.0,40.0,False,"
+
+
+def test_cli_prints_json(small_type_deck, capsys):
+    import json
+
+    assert dr.main([str(small_type_deck), "--format", "json"]) == 0
+    doc = json.loads(capsys.readouterr().out)
+    assert doc["deck"] == "small_type.pdf"
+    assert doc["flagged_slides"] == [2]
+    assert doc["per_slide"][1]["words"] == 88
+
+
+def test_cli_prints_csv_and_strict_still_applies(small_type_deck, capsys):
+    import csv
+
+    assert dr.main([str(small_type_deck), "--format", "csv", "--strict"]) == 1
+    rows = list(csv.DictReader(capsys.readouterr().out.splitlines()))
+    assert [r["slide"] for r in rows] == ["1", "2"]
+    assert rows[1]["flags"] == "type at 6.7pt, under the 8pt floor"

@@ -44,6 +44,20 @@ python deck_reader.py deck.pdf --strict
 python deck_reader.py deck.pdf --strict --min-type 12 --max-words 120
 ```
 
+To compare decks, print the measurements as JSON or CSV instead of the table. Both include each slide's flags, and `--strict` works the same way. CSV puts the deck's file name in every row, so `--no-header` lets several decks be stacked into one file:
+
+```bash
+python deck_reader.py deck.pdf --format json
+python deck_reader.py ours.pdf --format csv > decks.csv
+python deck_reader.py winner.pdf --format csv --no-header >> decks.csv
+```
+
+```
+deck,slide,words,images,body_pt,smallest_pt,content,flags
+ours.pdf,1,3,0,40.0,40.0,False,
+ours.pdf,2,88,1,12.0,6.7,True,"type at 6.7pt, under the 8pt floor"
+```
+
 To also save every slide as an image, add a folder name. This needs [poppler](https://poppler.freedesktop.org/) installed.
 
 ```bash

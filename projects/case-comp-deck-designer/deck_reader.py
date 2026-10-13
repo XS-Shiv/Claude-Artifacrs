@@ -10,10 +10,14 @@ Usage:
     python deck_reader.py deck.pdf            print the table and any slides over the limits
     python deck_reader.py deck.pdf out_dir    also render every slide into out_dir as JPEG
     python deck_reader.py deck.pdf --strict   exit with status 1 when a slide is over a limit
+    python deck_reader.py deck.pdf --format json   (or csv) print machine-readable output
 """
 from __future__ import annotations
 
 import argparse
+import csv
+import io
+import json
 import shutil
 import statistics
 import subprocess
@@ -137,6 +141,59 @@ def format_flags(
     return "\n".join(["Over the limits:", *lines]) if lines else ""
 
 
+CSV_FIELDS = ["deck", "slide", "words", "images", "body_pt", "smallest_pt", "content", "flags"]
+
+
+def to_records(
+    slides: Sequence[SlideStats], min_type_pt: float = MIN_TYPE_PT, max_words: int = MAX_WORDS
+) -> list[dict]:
+    """One dict per slide, with sizes rounded as the text report shows them."""
+    return [
+        {
+            "slide": s.number,
+            "words": s.words,
+            "images": s.images,
+            "body_pt": round(s.body_pt, 1),
+            "smallest_pt": round(s.smallest_pt, 1),
+            "content": s.words >= CONTENT_MIN_WORDS,
+            "flags": slide_flags(s, min_type_pt, max_words),
+        }
+        for s in slides
+    ]
+
+
+def format_json(
+    deck: str, slides: Sequence[SlideStats],
+    min_type_pt: float = MIN_TYPE_PT, max_words: int = MAX_WORDS,
+) -> str:
+    """The deck's summary, limits and per-slide measurements as one JSON document."""
+    records = to_records(slides, min_type_pt, max_words)
+    doc = {
+        "deck": deck,
+        "slides": len(slides),
+        "content_slides": len(content_slides(slides)),
+        "median_words": median_words(slides),
+        "limits": {"min_type_pt": min_type_pt, "max_words": max_words},
+        "flagged_slides": [r["slide"] for r in records if r["flags"]],
+        "per_slide": records,
+    }
+    return json.dumps(doc, indent=2)
+
+
+def format_csv(
+    deck: str, slides: Sequence[SlideStats], min_type_pt: float = MIN_TYPE_PT,
+    max_words: int = MAX_WORDS, header: bool = True,
+) -> str:
+    """One row per slide, with the deck name in every row so several decks can be stacked."""
+    buf = io.StringIO()
+    writer = csv.DictWriter(buf, fieldnames=CSV_FIELDS, lineterminator="\n")
+    if header:
+        writer.writeheader()
+    for record in to_records(slides, min_type_pt, max_words):
+        writer.writerow({**record, "deck": deck, "flags": "; ".join(record["flags"])})
+    return buf.getvalue().rstrip("\n")
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Measure a PDF slide deck slide by slide.")
     parser.add_argument("deck", help="the deck as a PDF")
@@ -147,16 +204,26 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="flag slides with more words than this (default: %(default)s)")
     parser.add_argument("--strict", action="store_true",
                         help="exit with status 1 when any slide is over a limit")
+    parser.add_argument("--format", choices=["text", "json", "csv"], default="text",
+                        help="output format (default: %(default)s)")
+    parser.add_argument("--no-header", action="store_true",
+                        help="with --format csv, leave out the header row, to append to a file")
     args = parser.parse_args(argv)
     if not Path(args.deck).is_file():
         parser.error(f"no such file: {args.deck}")
     slides = read_pdf(args.deck)
     if args.out_dir:
         render_slides(args.deck, args.out_dir)
-    print(format_report(slides))
     flags = format_flags(slides, args.min_type, args.max_words)
-    if flags:
-        print(flags)
+    name = Path(args.deck).name
+    if args.format == "json":
+        print(format_json(name, slides, args.min_type, args.max_words))
+    elif args.format == "csv":
+        print(format_csv(name, slides, args.min_type, args.max_words, not args.no_header))
+    else:
+        print(format_report(slides))
+        if flags:
+            print(flags)
     return 1 if flags and args.strict else 0
 
 
