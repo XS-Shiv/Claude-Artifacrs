@@ -1,4 +1,4 @@
-"""Measure a slide deck saved as PDF: words, images and type sizes on every slide.
+"""Measure a slide deck, as PDF or .pptx: words, images and type sizes on every slide.
 
 Type sizes are reported as they would appear on a standard 13.33in-wide slide,
 so decks exported at different page sizes can be compared with each other.
@@ -11,6 +11,7 @@ Usage:
     python deck_reader.py deck.pdf out_dir    also render every slide into out_dir as JPEG
     python deck_reader.py deck.pdf --strict   exit with status 1 when a slide is over a limit
     python deck_reader.py deck.pdf --format json   (or csv) print machine-readable output
+    python deck_reader.py deck.pptx           read a PowerPoint file directly
 """
 from __future__ import annotations
 
@@ -30,6 +31,8 @@ SLIDE_WIDTH_PT = 960.0  # a 13.33in-wide slide at 72 points per inch
 CONTENT_MIN_WORDS = 60  # fewer words than this is a cover, divider or thank-you slide
 MIN_TYPE_PT = 8.0  # the skill's floor: smaller type cannot be read on a slide
 MAX_WORDS = 450  # the densest content slides in the skill's reference decks
+DEFAULT_PPTX_PT = 18.0  # PowerPoint's default body size, used when a run sets no size
+EMU_PER_PT = 12700
 
 
 @dataclass(frozen=True)
@@ -82,6 +85,68 @@ def read_pdf(path: str | Path) -> list[SlideStats]:
             sizes = [word["size"] for word in words]
             slides.append(slide_stats(number, sizes, float(page.width), len(page.images)))
     return slides
+
+
+def _pptx_shapes(shapes):
+    """Every shape on a slide, looking inside groups."""
+    from pptx.enum.shapes import MSO_SHAPE_TYPE
+
+    for shape in shapes:
+        if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
+            yield from _pptx_shapes(shape.shapes)
+        else:
+            yield shape
+
+
+def _text_frames(shape):
+    """The text frames of a shape: its own, or one per cell of a table."""
+    if getattr(shape, "has_text_frame", False) and shape.has_text_frame:
+        yield shape.text_frame
+    if getattr(shape, "has_table", False) and shape.has_table:
+        for row in shape.table.rows:
+            for cell in row.cells:
+                yield cell.text_frame
+
+
+def pptx_word_sizes(text_frame, default_pt: float = DEFAULT_PPTX_PT) -> list[float]:
+    """The type size of each word in a text frame, in points.
+
+    A run's own size wins, then its paragraph's; a run that sets neither gets
+    default_pt, since sizes inherited from the slide master are not resolved.
+    """
+    sizes = []
+    for paragraph in text_frame.paragraphs:
+        para_size = paragraph.font.size
+        for run in paragraph.runs:
+            size = run.font.size or para_size
+            pt = size.pt if size is not None else default_pt
+            sizes.extend([pt] * len(run.text.split()))
+    return sizes
+
+
+def read_pptx(path: str | Path, default_pt: float = DEFAULT_PPTX_PT) -> list[SlideStats]:
+    """Read every slide of a .pptx deck into SlideStats, without converting it to PDF."""
+    from pptx import Presentation
+    from pptx.enum.shapes import MSO_SHAPE_TYPE
+
+    prs = Presentation(str(path))
+    width_pt = prs.slide_width / EMU_PER_PT
+    slides = []
+    for number, slide in enumerate(prs.slides, 1):
+        sizes: list[float] = []
+        images = 0
+        for shape in _pptx_shapes(slide.shapes):
+            if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
+                images += 1
+            for frame in _text_frames(shape):
+                sizes.extend(pptx_word_sizes(frame, default_pt))
+        slides.append(slide_stats(number, sizes, width_pt, images))
+    return slides
+
+
+def read_deck(path: str | Path) -> list[SlideStats]:
+    """Read a deck by its extension: .pptx with python-pptx, anything else as PDF."""
+    return read_pptx(path) if Path(path).suffix.lower() == ".pptx" else read_pdf(path)
 
 
 def render_slides(path: str | Path, out_dir: str | Path, width_px: int = 1280) -> None:
@@ -195,8 +260,8 @@ def format_csv(
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Measure a PDF slide deck slide by slide.")
-    parser.add_argument("deck", help="the deck as a PDF")
+    parser = argparse.ArgumentParser(description="Measure a slide deck slide by slide.")
+    parser.add_argument("deck", help="the deck as a PDF or .pptx")
     parser.add_argument("out_dir", nargs="?", help="folder to render the slides into as JPEG")
     parser.add_argument("--min-type", type=float, default=MIN_TYPE_PT, metavar="PT",
                         help="flag slides with type smaller than this (default: %(default)g)")
@@ -211,7 +276,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if not Path(args.deck).is_file():
         parser.error(f"no such file: {args.deck}")
-    slides = read_pdf(args.deck)
+    if args.out_dir and Path(args.deck).suffix.lower() == ".pptx":
+        parser.error("rendering slides needs a PDF; export the .pptx to PDF first")
+    slides = read_deck(args.deck)
     if args.out_dir:
         render_slides(args.deck, args.out_dir)
     flags = format_flags(slides, args.min_type, args.max_words)

@@ -7,7 +7,7 @@ A Claude skill for building and critiquing case-competition decks, and a small t
 | File | What it is |
 |---|---|
 | `SKILL.md` | The skill: a playbook for decoding a brief, building the argument and laying out the deck, plus a pattern library of what strong decks look like |
-| `deck_reader.py` | Measures a PDF deck: words, images, body type size and smallest type size on every slide |
+| `deck_reader.py` | Measures a PDF or `.pptx` deck: words, images, body type size and smallest type size on every slide |
 | `site/index.html` | The skill as a web page, with a button that copies the skill file |
 | `build_page.py` | Builds `site/index.html` from `SKILL.md` and `page_template.html` |
 | `tests/` | Tests for the reader and the page builder |
@@ -64,7 +64,13 @@ To also save every slide as an image, add a folder name. This needs [poppler](ht
 python deck_reader.py deck.pdf slides/
 ```
 
-A `.pptx` has to be exported to PDF first.
+A `.pptx` can be read directly, with no PDF export:
+
+```bash
+python deck_reader.py deck.pptx --strict
+```
+
+Words, pictures and type sizes are read from text boxes, groups and tables. A run that sets no size of its own or on its paragraph is counted at 18pt, PowerPoint's default, because sizes inherited from the slide master are not looked up. Rendering slides to images still needs a PDF.
 
 ## Using the skill
 

@@ -1,5 +1,6 @@
 pdfplumber>=0.11
 markdown>=3.5
+python-pptx>=1.0
 
 # tests only
 pytest>=8

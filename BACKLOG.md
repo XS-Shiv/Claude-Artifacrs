@@ -7,12 +7,13 @@ Planned work, grouped into small projects. Ticked items are done; `LOG.md` has t
 - [x] Add the skill and a tested deck reader for PDF decks
 - [x] Flag slides that break the skill's own limits: type under 8pt, more than 450 words
 - [x] `--json` and `--csv` output so results can be compared across decks
-- [ ] Read `.pptx` directly with python-pptx, without converting to PDF first
+- [x] Read `.pptx` directly with python-pptx, without converting to PDF first
 - [ ] List topic-only titles (no verb and no number)
 - [ ] Draft a deck card from the measurements, using the template in the skill
 - [ ] Rubric scorer: enter 1, 3 or 5 on the five criteria and get a report with the weakest first
 - [x] Build the skill's web page from `SKILL.md`
 - [ ] Serve the skill's page with GitHub Pages
+- [ ] Resolve `.pptx` type sizes inherited from the slide layout and master
 
 ## Product analytics
 
