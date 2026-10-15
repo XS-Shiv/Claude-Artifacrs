@@ -8,6 +8,7 @@ A Claude skill for building and critiquing case-competition decks, and a small t
 |---|---|
 | `SKILL.md` | The skill: a playbook for decoding a brief, building the argument and laying out the deck, plus a pattern library of what strong decks look like |
 | `deck_reader.py` | Measures a PDF or `.pptx` deck: words, images, body type size and smallest type size on every slide |
+| `titles.py` | Lists slide titles that name a topic instead of stating a conclusion |
 | `site/index.html` | The skill as a web page, with a button that copies the skill file |
 | `build_page.py` | Builds `site/index.html` from `SKILL.md` and `page_template.html` |
 | `tests/` | Tests for the reader and the page builder |
@@ -71,6 +72,24 @@ python deck_reader.py deck.pptx --strict
 ```
 
 Words, pictures and type sizes are read from text boxes, groups and tables. A run that sets no size of its own or on its paragraph is counted at 18pt, PowerPoint's default, because sizes inherited from the slide master are not looked up. Rendering slides to images still needs a PDF.
+
+## Checking titles
+
+The skill asks for action titles: a full sentence with a verb, and a number where one exists. `titles.py` prints the deck's titles in order (the ghost deck) and marks the ones that are topic-only, meaning no number and no verb:
+
+```bash
+python titles.py deck.pptx
+python titles.py deck.pdf --strict
+```
+
+```
+TOPIC  1 | Market overview
+       2 | Chennai resists quick commerce but offers a first-mover advantage
+TOPIC  3 | Financials
+2 of 3 titles are topic-only
+```
+
+In a `.pptx` the title is the slide's title placeholder; in a PDF it is the largest type in the top 30% of the page. Verbs are matched against a word list rather than parsed, so a title it flags is almost always a topic label, while an unusual verb can let a topic title pass. `--strict` exits with status 1 when any title is topic-only.
 
 ## Using the skill
 
