@@ -1,12 +1,12 @@
 # Claude Artifacts
 
-Things I first built as Claude artifacts, turned into small tested projects. One piece ships at a time, and each project folder runs on its own.
+Things I first built as Claude artifacts and skills, turned into small, tested Python projects. One piece ships at a time, and each project folder runs on its own.
 
 ## Projects
 
 | Project | What it does | Status |
 |---|---|---|
-| [case-comp-deck-designer](projects/case-comp-deck-designer) | A Claude skill for case-competition decks, with a tool that measures a deck's density slide by slide | In progress |
+| [ppt-designer](projects/ppt-designer) | A Claude skill for designing and critiquing slide decks, with tools that check density and titles slide by slide | In progress |
 
 ## How this repo is organised
 

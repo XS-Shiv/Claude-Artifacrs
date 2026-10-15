@@ -2,7 +2,7 @@
 
 Planned work, grouped into small projects. Ticked items are done; `LOG.md` has the dates.
 
-## case-comp-deck-designer (in progress)
+## ppt-designer (in progress)
 
 - [x] Add the skill and a tested deck reader for PDF decks
 - [x] Flag slides that break the skill's own limits: type under 8pt, more than 450 words

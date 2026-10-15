@@ -1,6 +1,6 @@
-# case-comp-deck-designer
+# ppt-designer
 
-A Claude skill for building and critiquing case-competition decks, and a small tool that measures how dense a deck is, slide by slide.
+A Claude skill for building and critiquing presentation decks (it started with case competitions, and the skill file is still named `case-comp-deck-designer`), plus small tools that check a deck slide by slide: how dense it is and whether its titles state a conclusion.
 
 ## What's here
 
