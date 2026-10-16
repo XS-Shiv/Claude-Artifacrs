@@ -9,9 +9,10 @@ A Claude skill for building and critiquing presentation decks (it started with c
 | `SKILL.md` | The skill: a playbook for decoding a brief, building the argument and laying out the deck, plus a pattern library of what strong decks look like |
 | `deck_reader.py` | Measures a PDF or `.pptx` deck: words, images, body type size and smallest type size on every slide |
 | `titles.py` | Lists slide titles that name a topic instead of stating a conclusion |
+| `deck_card.py` | Drafts a deck card for the skill's pattern library from those measurements |
 | `site/index.html` | The skill as a web page, with a button that copies the skill file |
 | `build_page.py` | Builds `site/index.html` from `SKILL.md` and `page_template.html` |
-| `tests/` | Tests for the reader and the page builder |
+| `tests/` | Tests for the reader, the title check, the deck card and the page builder |
 
 ## Measuring a deck
 
@@ -90,6 +91,26 @@ TOPIC  3 | Financials
 ```
 
 In a `.pptx` the title is the slide's title placeholder; in a PDF it is the largest type in the top 30% of the page. Verbs are matched against a word list rather than parsed, so a title it flags is almost always a topic label, while an unusual verb can let a topic title pass. `--strict` exits with status 1 when any title is topic-only.
+
+## Drafting a deck card
+
+In Learn mode the skill turns each reference deck into a deck card. `deck_card.py` fills in the parts that can be counted, in the card's own format, and leaves the parts that need eyes on the slides as prompts:
+
+```bash
+python deck_card.py deck.pptx --name "Sample retail case" --result finalist
+```
+
+```
+Deck: Sample retail case
+Result: finalist                           Slides: 4 (2 content)   Words per content slide: about 220
+Arc: Market entry plan > Chennai resists quick commerce but offers... > Financials > Thank you
+Layout: (fill in from the slide images)
+What makes it work: (fill in from the slide images)
+Worth borrowing: (fill in from the slide images)
+Weak spots: 3 of 4 titles are topic-only (slides 1, 3, 4)
+```
+
+The arc is the slide titles in order, each cut to six words. Weak spots list what `deck_reader.py` and `titles.py` can see: topic-only titles, type under 8pt and slides over 450 words. `--name` defaults to the file name and `--result` to "not stated".
 
 ## Using the skill
 
