@@ -2,6 +2,7 @@
 
 What shipped, newest first.
 
+- 2026-10-17: ppt-transition. New project: the Morph skill and its engine `morph.py`, which pairs components across slides, parks unpaired ones off the canvas and sets PowerPoint Morph, with tests that run plan, apply, strip and compare on generated decks. [`projects/ppt-transition/`](projects/ppt-transition)
 - 2026-10-16: ppt-designer. `deck_card.py` drafts a deck card in the skill's template from a PDF or `.pptx`: slide counts, words per content slide, the arc of titles and weak spots the checks find, with prompts for the visual fields and tests. [`projects/ppt-designer/`](projects/ppt-designer)
 - 2026-10-15: ppt-designer. `titles.py` prints a deck's slide titles in order and marks the topic-only ones (no number, no verb), from `.pptx` title placeholders or the largest type at the top of a PDF page, with `--strict` and tests. [`projects/ppt-designer/`](projects/ppt-designer)
 - 2026-10-14: ppt-designer. `deck_reader.py` reads `.pptx` decks directly with python-pptx, counting words, pictures and type sizes in text boxes, groups and tables, with tests. [`projects/ppt-designer/`](projects/ppt-designer)
