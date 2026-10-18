@@ -3,6 +3,7 @@
 
   morph.py plan  deck.pptx                 analyse only, write the match report
   morph.py apply deck.pptx -o out.pptx     name matched components, add ghosts, set Morph
+  morph.py apply deck.pptx -o out.pptx --dry-run   table of what each transition would do; writes no deck
   morph.py strip deck.pptx -o clean.pptx   undo a previous apply
   morph.py storyboard report.json --images 'slide-*.jpg' --out story
   morph.py compare 'before-*.jpg' 'after-*.jpg'   check the visible slides did not change
@@ -652,7 +653,10 @@ def run(args, write):
         report["self_check"] = problems or "passed"
         report["output"] = args.output
     json.dump(report, open(args.report, "w"), indent=1, ensure_ascii=False)
-    print_summary(report, write)
+    if getattr(args, "dry_run", False):
+        print_table(report)
+    else:
+        print_summary(report, write)
     return 1 if write and report["self_check"] != "passed" else 0
 
 
@@ -700,6 +704,41 @@ def print_summary(report, wrote):
         print("  note: " + w)
     if wrote:
         print("  self-check: " + (report["self_check"] if isinstance(report["self_check"], str) else "; ".join(report["self_check"])))
+
+
+def summary_rows(report):
+    """One row per transition: (label, morph, glide, fade, weak), plus a total row."""
+    rows = []
+    for e in report["pairs"]:
+        moves = e["enter"] + e["leave"]
+        glide = sum(i["motion"] == "glide" for i in moves)
+        weak = sum(m["confidence"] == "weak" for m in e["matches"])
+        rows.append(("%d -> %d" % (e["from"], e["to"]), len(e["matches"]), glide, len(moves) - glide, weak))
+    total = tuple(sum(r[i] for r in rows) for i in range(1, 5))
+    return rows + [("total",) + total]
+
+
+def print_table(report):
+    """The dry-run view: a table of slide changes, then the weak matches worth checking by eye."""
+    rows = summary_rows(report)
+    head = ("slides", "morph", "glide", "fade", "weak")
+    w0 = max(len(head[0]), *(len(r[0]) for r in rows))
+    line = lambda r: "  ".join([str(r[0]).ljust(w0)] + [str(v).rjust(5) for v in r[1:]])
+    print("DRY RUN (nothing written)  |  %d transitions" % report["summary"]["transitions"])
+    print(line(head))
+    print("-" * len(line(head)))
+    for r in rows[:-1]:
+        print(line(r))
+    print("-" * len(line(head)))
+    print(line(rows[-1]))
+    weak = [(e, m) for e in report["pairs"] for m in e["matches"] if m["confidence"] == "weak"]
+    if weak:
+        print("\nweak matches (check these, or fix them with an overrides file):")
+    for e, m in weak:
+        print("  %d -> %d  %.2f  %s [%s] -> %s [%s]  (%s)" % (e["from"], e["to"], m["score"], m["from"]["name"],
+              m["from"]["ref"], m["to"]["name"], m["to"]["ref"], m["why"]))
+    for w in report["warnings"]:
+        print("note: " + w)
 
 
 def storyboard(args):
@@ -782,6 +821,8 @@ def main():
         sp.add_argument("--overrides", help="JSON file with link / unlink / ignore / no_morph_slides / text_mode")
         sp.add_argument("--no-isolate", dest="isolate", action="store_false", help="leave unmatched components to PowerPoint's own guessing")
         sp.add_argument("--report", default="morph_report.json")
+        if name == "apply":
+            sp.add_argument("--dry-run", action="store_true", help="write nothing; print a table of what each transition would do")
     sp = sub.add_parser("strip")
     sp.add_argument("deck")
     sp.add_argument("-o", "--output", required=True)
@@ -805,7 +846,7 @@ def main():
             pkg.save(args.output)
             print("removed %d morph changes -> %s" % (n, args.output))
             return 0
-        return run(args, write=(args.cmd == "apply"))
+        return run(args, write=(args.cmd == "apply" and not args.dry_run))
     except zipfile.BadZipFile:
         print("Not a readable .pptx: an old .ppt or a password-protected file has to be re-saved as plain .pptx first.")
         return 2

@@ -25,7 +25,22 @@ pip install -r requirements.txt
 python morph.py plan deck.pptx                       # writes nothing; prints and saves the pairing report
 python morph.py apply deck.pptx -o deck-morph.pptx   # writes the animated copy
 python morph.py strip deck-morph.pptx -o clean.pptx  # undoes it
+python morph.py apply deck.pptx -o deck-morph.pptx --dry-run   # writes no deck; prints a table of changes
 ```
+
+`--dry-run` on the same sample:
+
+```
+DRY RUN (nothing written)  |  2 transitions
+slides  morph  glide   fade   weak
+----------------------------------
+1 -> 2      2      1      0      0
+2 -> 3      2      1      0      0
+----------------------------------
+total       4      2      0      0
+```
+
+Weak matches, if any, are listed under the table with their scores, so they can be fixed with an overrides file before the real run.
 
 Output for a three-slide sample where a title and a card move and a note appears only on slide 2:
 
@@ -46,8 +61,8 @@ Running `apply` on an already processed deck rebuilds it from scratch, so it is 
 pytest
 ```
 
-The tests check the pairing report, that `apply` names each pair the same across slides and parks copies off the canvas, that applying twice gives the same deck, that `strip` restores the original, and that overrides are honoured.
+The tests check the pairing report, that `apply` names each pair the same across slides and parks copies off the canvas, that applying twice gives the same deck, that `strip` restores the original, that overrides are honoured, that `--dry-run` counts each transition's changes without writing a deck, and that `SKILL.md` carries the same engine as `morph.py`.
 
 ## Where this came from
 
-Built as a Claude skill first. `morph.py` is the engine block from `SKILL.md`, extracted byte for byte (sha256 starts `4683ad8936dd`); later changes will be made here and carried back into the skill.
+Built as a Claude skill first. `morph.py` started as the engine block from `SKILL.md` (sha256 `4683ad8936dd`). Changes are made here and copied back into the skill's block, and a test fails if the two differ or the sha256 in `SKILL.md` is out of date.

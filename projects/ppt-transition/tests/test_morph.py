@@ -180,3 +180,52 @@ def test_compare_spots_a_changed_slide(tmp_path, monkeypatch):
         Image.new("RGB", (40, 20), colour if side == "a" else "red").save(tmp_path / f"{side}-2.png")
     assert _run(monkeypatch, "compare", tmp_path / "a-*.png", tmp_path / "a-*.png") == 0
     assert _run(monkeypatch, "compare", tmp_path / "a-*.png", tmp_path / "b-*.png") == 1
+
+
+# -------------------------------------------------------------- dry run ---
+
+def test_dry_run_prints_a_table_and_writes_no_deck(tmp_path, monkeypatch, capsys):
+    deck, out = _deck(tmp_path / "deck.pptx"), tmp_path / "deck-morph.pptx"
+    before = deck.read_bytes()
+    assert _run(monkeypatch, "apply", deck, "-o", out, "--dry-run", "--report", tmp_path / "r.json") == 0
+    assert not out.exists() and deck.read_bytes() == before
+    lines = capsys.readouterr().out.splitlines()
+    assert lines[0] == "DRY RUN (nothing written)  |  2 transitions"
+    assert lines[1].split() == ["slides", "morph", "glide", "fade", "weak"]
+    assert lines[3].split() == ["1", "->", "2", "2", "1", "0", "0"]
+    assert lines[4].split() == ["2", "->", "3", "2", "1", "0", "0"]
+    assert lines[6].split() == ["total", "4", "2", "0", "0"]
+
+
+def test_summary_rows_count_fades_and_weak_matches():
+    m = lambda conf: {"confidence": conf}
+    report = {"pairs": [
+        {"from": 1, "to": 2, "matches": [m("strong"), m("weak")],
+         "enter": [{"motion": "glide"}, {"motion": "fade"}], "leave": [{"motion": "fade"}]},
+        {"from": 2, "to": 4, "matches": [m("likely")], "enter": [], "leave": [{"motion": "glide"}]},
+    ]}
+    assert morph.summary_rows(report) == [("1 -> 2", 2, 1, 2, 1), ("2 -> 4", 1, 1, 0, 0), ("total", 3, 2, 2, 1)]
+
+
+def test_dry_run_lists_weak_matches_and_notes(capsys):
+    side = lambda name, ref: {"name": name, "ref": ref}
+    report = {"summary": {"transitions": 1}, "warnings": ["slide 2 has 1 empty placeholder(s)"], "pairs": [
+        {"from": 1, "to": 2, "enter": [], "leave": [], "matches": [
+            {"confidence": "weak", "score": 0.52, "from": side("Box 3", "1:3"), "to": side("Box 7", "2:7"),
+             "why": "same size, moved"}]}]}
+    morph.print_table(report)
+    out = capsys.readouterr().out
+    assert "weak matches" in out
+    assert "1 -> 2  0.52  Box 3 [1:3] -> Box 7 [2:7]  (same size, moved)" in out
+    assert out.rstrip().endswith("note: slide 2 has 1 empty placeholder(s)")
+
+
+def test_skill_carries_the_same_engine():
+    import hashlib
+    import pathlib
+    import re
+    root = pathlib.Path(__file__).resolve().parent.parent
+    md = (root / "SKILL.md").read_text(encoding="utf-8")
+    code = re.search(r"<!-- ENGINE START -->\s*`{3}python\n(.*?)\n`{3}\s*<!-- ENGINE END -->", md, re.S).group(1) + "\n"
+    assert code == (root / "morph.py").read_text(encoding="utf-8")
+    assert "sha256 `%s`" % hashlib.sha256(code.encode()).hexdigest()[:12] in md
