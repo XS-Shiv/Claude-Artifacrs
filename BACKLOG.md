@@ -6,7 +6,7 @@ Planned work, grouped into small projects. Ticked items are done; `LOG.md` has t
 
 - [x] Add the Morph skill and its engine, with end-to-end tests on generated decks
 - [ ] Split `morph.py` into a package (package, matching, ghosts, CLI) with the skill's extract step still working
-- [ ] `--dry-run` summary as a table of slide changes: morph, glide, fade counts and weak matches
+- [x] `--dry-run` summary as a table of slide changes: morph, glide, fade counts and weak matches
 - [ ] Test the matching score on hand-built pairs: same text, moved shape, same image, footer
 - [ ] `check` command: re-open a morphed deck and list slides whose transition or `!!` names are broken
 - [ ] Build the skill's web page from `SKILL.md`, the way ppt-designer does
