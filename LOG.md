@@ -2,6 +2,7 @@
 
 What shipped, newest first.
 
+- 2026-10-19: ppt-transition. `tests/test_score.py` pins down the matching score on hand-built pairs: same text in place or moved, a plain card that moves, the same image resized into a corner, different images in one slot, footers, retitled slides and kind mismatches, each checked against the default 0.5 threshold. [`projects/ppt-transition/`](projects/ppt-transition)
 - 2026-10-18: ppt-transition. `apply --dry-run` writes no deck and prints a table of morph, glide, fade and weak counts per transition, with the weak matches listed below it; the change is carried back into `SKILL.md`, and a test now checks the skill's engine block matches `morph.py`. [`projects/ppt-transition/`](projects/ppt-transition)
 - 2026-10-17: ppt-transition. New project: the Morph skill and its engine `morph.py`, which pairs components across slides, parks unpaired ones off the canvas and sets PowerPoint Morph, with tests that run plan, apply, strip and compare on generated decks. [`projects/ppt-transition/`](projects/ppt-transition)
 - 2026-10-16: ppt-designer. `deck_card.py` drafts a deck card in the skill's template from a PDF or `.pptx`: slide counts, words per content slide, the arc of titles and weak spots the checks find, with prompts for the visual fields and tests. [`projects/ppt-designer/`](projects/ppt-designer)
