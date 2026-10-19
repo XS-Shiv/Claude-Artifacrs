@@ -8,7 +8,7 @@ A Claude skill that adds PowerPoint Morph transitions between the slides of a fi
 |---|---|
 | `SKILL.md` | The skill: how Morph pairs objects, the plan, check, apply workflow, and the limits to tell the user about |
 | `morph.py` | The engine, extracted unchanged from the skill: `plan`, `apply`, `strip`, `storyboard`, `compare` |
-| `tests/` | Tests that build small decks with python-pptx and run the engine end to end |
+| `tests/` | Tests that build small decks with python-pptx and run the engine end to end, plus `test_score.py`, which checks the matching score on hand-built pairs |
 
 ## How it works
 
@@ -61,7 +61,7 @@ Running `apply` on an already processed deck rebuilds it from scratch, so it is 
 pytest
 ```
 
-The tests check the pairing report, that `apply` names each pair the same across slides and parks copies off the canvas, that applying twice gives the same deck, that `strip` restores the original, that overrides are honoured, that `--dry-run` counts each transition's changes without writing a deck, and that `SKILL.md` carries the same engine as `morph.py`.
+The tests check the pairing report, that `apply` names each pair the same across slides and parks copies off the canvas, that applying twice gives the same deck, that `strip` restores the original, that overrides are honoured, that `--dry-run` counts each transition's changes without writing a deck, and that `SKILL.md` carries the same engine as `morph.py`. `tests/test_score.py` feeds the matching score hand-built pairs (same text, a moved shape, the same image, footers, retitled slides) and checks which clear the default 0.5 threshold.
 
 ## Where this came from
 
