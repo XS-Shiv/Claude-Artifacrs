@@ -7,8 +7,8 @@ A Claude skill that adds PowerPoint Morph transitions between the slides of a fi
 | File | What it is |
 |---|---|
 | `SKILL.md` | The skill: how Morph pairs objects, the plan, check, apply workflow, and the limits to tell the user about |
-| `morph.py` | The engine, extracted unchanged from the skill: `plan`, `apply`, `strip`, `storyboard`, `compare` |
-| `tests/` | Tests that build small decks with python-pptx and run the engine end to end, plus `test_score.py`, which checks the matching score on hand-built pairs |
+| `morph.py` | The engine, extracted unchanged from the skill: `plan`, `apply`, `strip`, `check`, `storyboard`, `compare` |
+| `tests/` | Tests that build small decks with python-pptx and run the engine end to end, plus `test_score.py` for the matching score and `test_check.py` for `check` |
 
 ## How it works
 
@@ -25,6 +25,7 @@ pip install -r requirements.txt
 python morph.py plan deck.pptx                       # writes nothing; prints and saves the pairing report
 python morph.py apply deck.pptx -o deck-morph.pptx   # writes the animated copy
 python morph.py strip deck-morph.pptx -o clean.pptx  # undoes it
+python morph.py check deck-morph.pptx                # lists transitions and !! names an edit broke
 python morph.py apply deck.pptx -o deck-morph.pptx --dry-run   # writes no deck; prints a table of changes
 ```
 
@@ -53,6 +54,15 @@ APPLIED -> deck-morph.pptx  |  2 transitions  |  4 components morph, 2 glide in/
 
 `--style push|assemble|fade`, `--enter-from`, `--duration`, `--text-mode object|word|char` and `--slides 2-6,9` set the feel. Wrong pairs are fixed with an overrides file (`link`, `unlink`, `ignore`, `no_morph_slides`, `text_mode`); `SKILL.md` explains each one.
 
+`check` re-opens a morphed deck, typically after someone edited it in PowerPoint, and lists what the edit broke:
+
+```
+CHECK deck-morph.pptx  |  1 Morph transitions  |  1 problem(s)
+  slide 2: shares 3 morph name(s) with slide 1 but its transition is not Morph
+```
+
+It also flags a `!!` name used twice by one shape type, a name held by different shape types on two slides, and parked copies whose real shape was deleted or renamed. It exits 1 when anything is listed.
+
 Running `apply` on an already processed deck rebuilds it from scratch, so it is safe to edit the morphed deck and run it again.
 
 ## Tests
@@ -61,7 +71,7 @@ Running `apply` on an already processed deck rebuilds it from scratch, so it is 
 pytest
 ```
 
-The tests check the pairing report, that `apply` names each pair the same across slides and parks copies off the canvas, that applying twice gives the same deck, that `strip` restores the original, that overrides are honoured, that `--dry-run` counts each transition's changes without writing a deck, and that `SKILL.md` carries the same engine as `morph.py`. `tests/test_score.py` feeds the matching score hand-built pairs (same text, a moved shape, the same image, footers, retitled slides) and checks which clear the default 0.5 threshold.
+The tests check the pairing report, that `apply` names each pair the same across slides and parks copies off the canvas, that applying twice gives the same deck, that `strip` restores the original, that overrides are honoured, that `--dry-run` counts each transition's changes without writing a deck, and that `SKILL.md` carries the same engine as `morph.py`. `tests/test_check.py` edits a morphed deck the way PowerPoint would (transition reset, a name clash, a deleted shape) and checks `check` reports each one, and nothing on a fresh deck. `tests/test_score.py` feeds the matching score hand-built pairs (same text, a moved shape, the same image, footers, retitled slides) and checks which clear the default 0.5 threshold.
 
 ## Where this came from
 

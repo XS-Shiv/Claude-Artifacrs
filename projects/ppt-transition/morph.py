@@ -5,6 +5,7 @@
   morph.py apply deck.pptx -o out.pptx     name matched components, add ghosts, set Morph
   morph.py apply deck.pptx -o out.pptx --dry-run   table of what each transition would do; writes no deck
   morph.py strip deck.pptx -o clean.pptx   undo a previous apply
+  morph.py check deck-morph.pptx           re-open a morphed deck and list broken transitions or !! names
   morph.py storyboard report.json --images 'slide-*.jpg' --out story
   morph.py compare 'before-*.jpg' 'after-*.jpg'   check the visible slides did not change
 """
@@ -689,6 +690,51 @@ def self_check(path, had_dup_ids=()):
     return bad
 
 
+def bang_names(root):
+    """{'!!' name: [shape kinds]} for the real (non-fallback) shapes on a slide."""
+    out = {}
+    for cnv in root.iter(q("p:cNvPr")):
+        name, shape = cnv.get("name", ""), cnv.getparent().getparent()
+        if not name.startswith("!!") or local(shape) not in SHAPES or any(a.tag == q("mc:Fallback") for a in cnv.iterancestors()):
+            continue
+        out.setdefault(name, []).append(local(shape))
+    return out
+
+
+def check_deck(pkg):
+    """Problems in a deck after it was morphed (and maybe edited): -> (morph transitions, [problem lines])."""
+    roots = {n: pkg.xml(part) for n, part in enumerate(pkg.slides, 1)}
+    visible = [n for n, r in roots.items() if r.get("show", "1") not in ("0", "false")]
+    names = {n: bang_names(r) for n, r in roots.items()}
+    morphs = {n for n, r in roots.items() if (find_transition(r)[0] is not None and find_transition(r)[0].find(".//p159:morph", NS) is not None)}
+    bad = []
+    for n in visible:
+        bad += ["slide %d: the name '%s' is used by %d %s shapes" % (n, k, v.count(kind), kind)
+                for k, v in names[n].items() for kind in sorted(set(v)) if v.count(kind) > 1]
+    for a, b in zip(visible, visible[1:]):
+        shared = set(names[a]) & set(names[b])
+        if shared and b not in morphs:
+            bad.append("slide %d: shares %d morph name(s) with slide %d but its transition is not Morph" % (b, len(shared), a))
+        bad += ["slides %d -> %d: '%s' is a %s on one and a %s on the other, so it cannot morph" % (a, b, k, "/".join(names[a][k]), "/".join(names[b][k]))
+                for k in sorted(shared) if not set(names[a][k]) & set(names[b][k])]
+    for i, n in enumerate(visible):
+        tree = roots[n].find("p:cSld/p:spTree", NS)
+        near = set().union(*(names[m] for m in visible[max(i - 1, 0):i + 2] if m != n))
+        for el, wrapper, _ in top_shapes(tree):
+            name = cnv_of(el).get("name", "")
+            if wrapper is None and is_ghost(el, pkg.W, pkg.H) and name not in near:
+                bad.append("slide %d: parked copy '%s' has no partner on a neighbouring slide (was it deleted or renamed?)" % (n, name))
+    return len(morphs), bad
+
+
+def check(args):
+    n_morph, bad = check_deck(Pkg(args.deck))
+    print("CHECK %s  |  %d Morph transitions  |  %s" % (args.deck, n_morph, "%d problem(s)" % len(bad) if bad else "no problems found"))
+    for line in bad:
+        print("  " + line)
+    return 1 if bad else 0
+
+
 def print_summary(report, wrote):
     s = report["summary"]
     print("%s  |  %d transitions  |  %d components morph, %d glide in/out, %d fade" % (
@@ -826,6 +872,8 @@ def main():
     sp = sub.add_parser("strip")
     sp.add_argument("deck")
     sp.add_argument("-o", "--output", required=True)
+    sp = sub.add_parser("check")
+    sp.add_argument("deck")
     sp = sub.add_parser("storyboard")
     sp.add_argument("report")
     sp.add_argument("--images", required=True, help="glob of rendered slide images, in slide order")
@@ -840,6 +888,8 @@ def main():
     if args.cmd == "compare":
         return compare(args)
     try:
+        if args.cmd == "check":
+            return check(args)
         if args.cmd == "strip":
             pkg = Pkg(args.deck)
             n = strip(pkg)

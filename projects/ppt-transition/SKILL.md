@@ -40,7 +40,7 @@ print("engine written:", len(code.splitlines()), "lines, sha256", hashlib.sha256
 EOF
 ```
 
-It should report sha256 `2d9a5f8c71db`. If the value differs and the user has not edited the engine, treat the copy as suspect: run `python3 -m py_compile morph.py` and make sure step 3 runs cleanly before trusting it. If this file is not on disk, write the block out with the file-writing tool and confirm `python3 morph.py -h` runs. It needs `lxml` (and `Pillow` for the picture commands).
+It should report sha256 `3d1d433ca063`. If the value differs and the user has not edited the engine, treat the copy as suspect: run `python3 -m py_compile morph.py` and make sure step 3 runs cleanly before trusting it. If this file is not on disk, write the block out with the file-writing tool and confirm `python3 morph.py -h` runs. It needs `lxml` (and `Pillow` for the picture commands).
 
 ### 3. Plan first, and look at the plan
 
@@ -116,6 +116,8 @@ python3 morph.py compare 'before/s-*.jpg' 'after/s-*.jpg'
 
 `compare` must say every slide looks identical. If a slide differs, a parked copy is showing on the slide or a rename broke something: do not deliver, find the cause.
 
+When the user sends back a morphed deck they have edited, run `python3 morph.py check deck-morph.pptx` first. It lists slides whose transition is no longer Morph while they still share `!!` names with the slide before, a `!!` name used twice by shapes of one type, a name held by different shape types on two slides, and parked copies whose partner was deleted or renamed. It exits 1 when it finds any; a fresh `apply` fixes them all.
+
 Running `apply` on a deck that was already processed is safe. The engine removes its earlier work first and rebuilds from scratch, so the user can edit the morphed deck in PowerPoint and ask for it to be redone. `python3 morph.py strip deck-morph.pptx -o clean.pptx` removes the transitions, the parked copies and the `!!m` name prefixes.
 
 ### 6. Hand it over
@@ -149,6 +151,7 @@ Morph rewards decks made of recurring parts. When the same skill run includes wr
   morph.py apply deck.pptx -o out.pptx     name matched components, add ghosts, set Morph
   morph.py apply deck.pptx -o out.pptx --dry-run   table of what each transition would do; writes no deck
   morph.py strip deck.pptx -o clean.pptx   undo a previous apply
+  morph.py check deck-morph.pptx           re-open a morphed deck and list broken transitions or !! names
   morph.py storyboard report.json --images 'slide-*.jpg' --out story
   morph.py compare 'before-*.jpg' 'after-*.jpg'   check the visible slides did not change
 """
@@ -833,6 +836,51 @@ def self_check(path, had_dup_ids=()):
     return bad
 
 
+def bang_names(root):
+    """{'!!' name: [shape kinds]} for the real (non-fallback) shapes on a slide."""
+    out = {}
+    for cnv in root.iter(q("p:cNvPr")):
+        name, shape = cnv.get("name", ""), cnv.getparent().getparent()
+        if not name.startswith("!!") or local(shape) not in SHAPES or any(a.tag == q("mc:Fallback") for a in cnv.iterancestors()):
+            continue
+        out.setdefault(name, []).append(local(shape))
+    return out
+
+
+def check_deck(pkg):
+    """Problems in a deck after it was morphed (and maybe edited): -> (morph transitions, [problem lines])."""
+    roots = {n: pkg.xml(part) for n, part in enumerate(pkg.slides, 1)}
+    visible = [n for n, r in roots.items() if r.get("show", "1") not in ("0", "false")]
+    names = {n: bang_names(r) for n, r in roots.items()}
+    morphs = {n for n, r in roots.items() if (find_transition(r)[0] is not None and find_transition(r)[0].find(".//p159:morph", NS) is not None)}
+    bad = []
+    for n in visible:
+        bad += ["slide %d: the name '%s' is used by %d %s shapes" % (n, k, v.count(kind), kind)
+                for k, v in names[n].items() for kind in sorted(set(v)) if v.count(kind) > 1]
+    for a, b in zip(visible, visible[1:]):
+        shared = set(names[a]) & set(names[b])
+        if shared and b not in morphs:
+            bad.append("slide %d: shares %d morph name(s) with slide %d but its transition is not Morph" % (b, len(shared), a))
+        bad += ["slides %d -> %d: '%s' is a %s on one and a %s on the other, so it cannot morph" % (a, b, k, "/".join(names[a][k]), "/".join(names[b][k]))
+                for k in sorted(shared) if not set(names[a][k]) & set(names[b][k])]
+    for i, n in enumerate(visible):
+        tree = roots[n].find("p:cSld/p:spTree", NS)
+        near = set().union(*(names[m] for m in visible[max(i - 1, 0):i + 2] if m != n))
+        for el, wrapper, _ in top_shapes(tree):
+            name = cnv_of(el).get("name", "")
+            if wrapper is None and is_ghost(el, pkg.W, pkg.H) and name not in near:
+                bad.append("slide %d: parked copy '%s' has no partner on a neighbouring slide (was it deleted or renamed?)" % (n, name))
+    return len(morphs), bad
+
+
+def check(args):
+    n_morph, bad = check_deck(Pkg(args.deck))
+    print("CHECK %s  |  %d Morph transitions  |  %s" % (args.deck, n_morph, "%d problem(s)" % len(bad) if bad else "no problems found"))
+    for line in bad:
+        print("  " + line)
+    return 1 if bad else 0
+
+
 def print_summary(report, wrote):
     s = report["summary"]
     print("%s  |  %d transitions  |  %d components morph, %d glide in/out, %d fade" % (
@@ -970,6 +1018,8 @@ def main():
     sp = sub.add_parser("strip")
     sp.add_argument("deck")
     sp.add_argument("-o", "--output", required=True)
+    sp = sub.add_parser("check")
+    sp.add_argument("deck")
     sp = sub.add_parser("storyboard")
     sp.add_argument("report")
     sp.add_argument("--images", required=True, help="glob of rendered slide images, in slide order")
@@ -984,6 +1034,8 @@ def main():
     if args.cmd == "compare":
         return compare(args)
     try:
+        if args.cmd == "check":
+            return check(args)
         if args.cmd == "strip":
             pkg = Pkg(args.deck)
             n = strip(pkg)
