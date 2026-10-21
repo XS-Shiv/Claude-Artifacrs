@@ -8,6 +8,8 @@ A Claude skill that adds PowerPoint Morph transitions between the slides of a fi
 |---|---|
 | `SKILL.md` | The skill: how Morph pairs objects, the plan, check, apply workflow, and the limits to tell the user about |
 | `morph.py` | The engine, extracted unchanged from the skill: `plan`, `apply`, `strip`, `check`, `storyboard`, `compare` |
+| `build_page.py`, `page_template.html` | Build the skill's web page, `site/index.html`, from `SKILL.md`, with the engine folded into a collapsed block |
+| `site/index.html` | The generated page: the skill as readable HTML, a copy button and the raw file |
 | `tests/` | Tests that build small decks with python-pptx and run the engine end to end, plus `test_score.py` for the matching score and `test_check.py` for `check` |
 
 ## How it works
@@ -65,13 +67,22 @@ It also flags a `!!` name used twice by one shape type, a name held by different
 
 Running `apply` on an already processed deck rebuilds it from scratch, so it is safe to edit the morphed deck and run it again.
 
+## The skill's web page
+
+```bash
+python build_page.py            # writes site/index.html from SKILL.md and page_template.html
+python build_page.py --check    # exits 1 if the page is out of date
+```
+
+The engine block is shown collapsed, labelled with its line count and the same sha256 the skill's extract step prints, so the page stays readable and the code on it can be checked against `morph.py`.
+
 ## Tests
 
 ```bash
 pytest
 ```
 
-The tests check the pairing report, that `apply` names each pair the same across slides and parks copies off the canvas, that applying twice gives the same deck, that `strip` restores the original, that overrides are honoured, that `--dry-run` counts each transition's changes without writing a deck, and that `SKILL.md` carries the same engine as `morph.py`. `tests/test_check.py` edits a morphed deck the way PowerPoint would (transition reset, a name clash, a deleted shape) and checks `check` reports each one, and nothing on a fresh deck. `tests/test_score.py` feeds the matching score hand-built pairs (same text, a moved shape, the same image, footers, retitled slides) and checks which clear the default 0.5 threshold.
+The tests check the pairing report, that `apply` names each pair the same across slides and parks copies off the canvas, that applying twice gives the same deck, that `strip` restores the original, that overrides are honoured, that `--dry-run` counts each transition's changes without writing a deck, and that `SKILL.md` carries the same engine as `morph.py`. `tests/test_build_page.py` checks the page has every heading, the exact raw file, the engine identical to `morph.py` with its hash, working in-page links, and that the committed page is current. `tests/test_check.py` edits a morphed deck the way PowerPoint would (transition reset, a name clash, a deleted shape) and checks `check` reports each one, and nothing on a fresh deck. `tests/test_score.py` feeds the matching score hand-built pairs (same text, a moved shape, the same image, footers, retitled slides) and checks which clear the default 0.5 threshold.
 
 ## Where this came from
 
