@@ -10,9 +10,10 @@ A Claude skill for building and critiquing presentation decks (it started with c
 | `deck_reader.py` | Measures a PDF or `.pptx` deck: words, images, body type size and smallest type size on every slide |
 | `titles.py` | Lists slide titles that name a topic instead of stating a conclusion |
 | `deck_card.py` | Drafts a deck card for the skill's pattern library from those measurements |
+| `rubric.py` | Turns the skill's five rubric scores into a report, weakest criterion first |
 | `site/index.html` | The skill as a web page, with a button that copies the skill file |
 | `build_page.py` | Builds `site/index.html` from `SKILL.md` and `page_template.html` |
-| `tests/` | Tests for the reader, the title check, the deck card and the page builder |
+| `tests/` | Tests for the reader, the title check, the deck card, the rubric scorer and the page builder |
 
 ## Measuring a deck
 
@@ -111,6 +112,28 @@ Weak spots: 3 of 4 titles are topic-only (slides 1, 3, 4)
 ```
 
 The arc is the slide titles in order, each cut to six words. Weak spots list what `deck_reader.py` and `titles.py` can see: topic-only titles, type under 8pt and slides over 450 words. `--name` defaults to the file name and `--result` to "not stated".
+
+## Scoring a deck on the rubric
+
+Before handing a deck over, the skill scores it on five criteria (Clarity, Feasibility, Evidence, Story, Q&A readiness) at 1, 3 or 5. `rubric.py` takes those scores and lists the criteria weakest first, with what a 5 needs for each one under 5:
+
+```bash
+python rubric.py clarity=5 feasibility=3 evidence=1 story=3 qa=5
+```
+
+```
+RUBRIC  17/25  |  3 of 5 under 5
+
+1  Evidence       Claims only  ->  needs: Numbers and sources
+3  Feasibility    Some plan  ->  needs: Cost, owners and timeline clear
+3  Story          Logical sequence  ->  needs: Memorable narrative
+5  Clarity        Crisp and answer-first
+5  Q&A readiness  Appendix-ready
+
+Fix first: Evidence
+```
+
+Every criterion must be scored once, at 1, 3 or 5. `--strict` exits with status 1 when any criterion is under 5. A test checks the descriptions still match the rubric table in `SKILL.md`.
 
 ## Using the skill
 
