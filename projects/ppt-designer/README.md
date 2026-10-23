@@ -61,6 +61,14 @@ ours.pdf,1,3,0,40.0,40.0,False,
 ours.pdf,2,88,1,12.0,6.7,True,"type at 6.7pt, under the 8pt floor"
 ```
 
+The JSON also runs the title check from `titles.py`, so one run gives the full picture: each slide carries its `title` and `topic_only` verdict (both `null` when no title was found), and `topic_only_titles` lists the slides whose title names a topic instead of stating a conclusion. Topic-only titles are not readability flags, so they stay out of `flagged_slides` and do not change what `--strict` does.
+
+```
+"flagged_slides": [],
+"topic_only_titles": [1],
+"per_slide": [{"slide": 1, ..., "title": "Pricing overview", "topic_only": true}, ...]
+```
+
 To also save every slide as an image, add a folder name. This needs [poppler](https://poppler.freedesktop.org/) installed.
 
 ```bash

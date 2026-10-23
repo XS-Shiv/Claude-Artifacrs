@@ -10,7 +10,8 @@ Usage:
     python deck_reader.py deck.pdf            print the table and any slides over the limits
     python deck_reader.py deck.pdf out_dir    also render every slide into out_dir as JPEG
     python deck_reader.py deck.pdf --strict   exit with status 1 when a slide is over a limit
-    python deck_reader.py deck.pdf --format json   (or csv) print machine-readable output
+    python deck_reader.py deck.pdf --format json   (or csv) print machine-readable output;
+                                              JSON also carries each slide's title check
     python deck_reader.py deck.pptx           read a PowerPoint file directly
 """
 from __future__ import annotations
@@ -227,12 +228,33 @@ def to_records(
     ]
 
 
+def add_titles(records: list[dict], titles: Sequence[tuple[int, str]]) -> list[int]:
+    """Put each slide's title and its topic-only verdict into its record.
+
+    Slides with no title found get None for both. Returns the topic-only slide numbers.
+    """
+    from titles import is_topic_only
+
+    by_slide = dict(titles)
+    for record in records:
+        title = by_slide.get(record["slide"])
+        record["title"] = title
+        record["topic_only"] = None if title is None else is_topic_only(title)
+    return [r["slide"] for r in records if r["topic_only"]]
+
+
 def format_json(
     deck: str, slides: Sequence[SlideStats],
     min_type_pt: float = MIN_TYPE_PT, max_words: int = MAX_WORDS,
+    titles: Sequence[tuple[int, str]] | None = None,
 ) -> str:
-    """The deck's summary, limits and per-slide measurements as one JSON document."""
+    """The deck's summary, limits and per-slide measurements as one JSON document.
+
+    With titles, as (slide number, title) pairs from titles.read_titles, each slide also
+    carries its title and topic-only verdict, and the summary lists the topic-only slides.
+    """
     records = to_records(slides, min_type_pt, max_words)
+    topic_only = add_titles(records, titles) if titles is not None else None
     doc = {
         "deck": deck,
         "slides": len(slides),
@@ -240,8 +262,10 @@ def format_json(
         "median_words": median_words(slides),
         "limits": {"min_type_pt": min_type_pt, "max_words": max_words},
         "flagged_slides": [r["slide"] for r in records if r["flags"]],
-        "per_slide": records,
     }
+    if topic_only is not None:
+        doc["topic_only_titles"] = topic_only
+    doc["per_slide"] = records
     return json.dumps(doc, indent=2)
 
 
@@ -284,7 +308,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     flags = format_flags(slides, args.min_type, args.max_words)
     name = Path(args.deck).name
     if args.format == "json":
-        print(format_json(name, slides, args.min_type, args.max_words))
+        from titles import read_titles
+
+        print(format_json(name, slides, args.min_type, args.max_words, read_titles(args.deck)))
     elif args.format == "csv":
         print(format_csv(name, slides, args.min_type, args.max_words, not args.no_header))
     else:
