@@ -2,16 +2,16 @@
 
 Planned work, grouped into small projects. Ticked items are done; `LOG.md` has the dates.
 
-## ppt-transition (in progress)
+## ppt-transition (paused)
 
 - [x] Add the Morph skill and its engine, with end-to-end tests on generated decks
-- [ ] Split `morph.py` into a package (package, matching, ghosts, CLI) with the skill's extract step still working
+- [ ] Split `morph.py` into a package (package, matching, ghosts, CLI) with the skill's extract step still working (too large for one day: the skill embeds `morph.py` as one block, so plan the extract step first)
 - [x] `--dry-run` summary as a table of slide changes: morph, glide, fade counts and weak matches
 - [x] Test the matching score on hand-built pairs: same text, moved shape, same image, footer
 - [x] `check` command: re-open a morphed deck and list slides whose transition or `!!` names are broken
 - [x] Build the skill's web page from `SKILL.md`, the way ppt-designer does
 
-## ppt-designer (paused)
+## ppt-designer (in progress)
 
 - [x] Add the skill and a tested deck reader for PDF decks
 - [x] Flag slides that break the skill's own limits: type under 8pt, more than 450 words
@@ -23,7 +23,7 @@ Planned work, grouped into small projects. Ticked items are done; `LOG.md` has t
 - [x] Build the skill's web page from `SKILL.md`
 - [ ] Serve the skill's page with GitHub Pages
 - [ ] Resolve `.pptx` type sizes inherited from the slide layout and master
-- [ ] Add `titles.py` results to `deck_reader.py --format json` so one run gives the full check
+- [x] Add `titles.py` results to `deck_reader.py --format json` so one run gives the full check
 - [ ] `deck_card.py --render` to save slide images beside the card for filling in the layout fields
 
 ## Product analytics
