@@ -109,18 +109,85 @@ def _text_frames(shape):
                 yield cell.text_frame
 
 
-def pptx_word_sizes(text_frame, default_pt: float = DEFAULT_PPTX_PT) -> list[float]:
+_A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
+_P = "{http://schemas.openxmlformats.org/presentationml/2006/main}"
+
+
+def _list_style_pt(element, level: int) -> float | None:
+    """The size an a:lstStyle (or a master text style) sets for a paragraph level."""
+    if element is None:
+        return None
+    lvl = element.find(f"{_A}lvl{level + 1}pPr")
+    rpr = lvl.find(f"{_A}defRPr") if lvl is not None else None
+    if rpr is not None and rpr.get("sz"):
+        return int(rpr.get("sz")) / 100
+    return None
+
+
+def _shape_list_style(shape):
+    body = shape._element.find(f".//{_P}txBody")
+    return body.find(f"{_A}lstStyle") if body is not None else None
+
+
+def inherited_pt(shape, level: int = 0) -> float | None:
+    """The type size a placeholder inherits when its runs and paragraphs set none.
+
+    Follows PowerPoint's order: the shape's own list style, the matching
+    placeholder on the slide layout (same idx), the master placeholder of the
+    same kind, then the master's title, body or other text style. Returns None
+    for shapes that are not placeholders, and when nothing in the chain sets a size.
+    """
+    from pptx.enum.shapes import PP_PLACEHOLDER as PH
+
+    if not getattr(shape, "is_placeholder", False):
+        return None
+    titles = {PH.TITLE, PH.CENTER_TITLE, PH.VERTICAL_TITLE}
+    footers = {PH.DATE, PH.FOOTER, PH.SLIDE_NUMBER}
+    chain = [_shape_list_style(shape)]
+    kind = shape.placeholder_format.type
+    layout = getattr(shape.part, "slide_layout", None)
+    if layout is not None:
+        idx = shape.placeholder_format.idx
+        match = next((p for p in layout.placeholders if p.placeholder_format.idx == idx), None)
+        if match is not None:
+            chain.append(_shape_list_style(match))
+            kind = match.placeholder_format.type
+        master = layout.slide_master
+        want = PH.TITLE if kind in titles else kind if kind in footers else PH.BODY
+        mph = next((p for p in master.placeholders if p.placeholder_format.type == want), None)
+        if mph is not None:
+            chain.append(_shape_list_style(mph))
+        styles = master._element.find(f"{_P}txStyles")
+        if styles is not None:
+            name = "titleStyle" if kind in titles else "otherStyle" if kind in footers else "bodyStyle"
+            chain.append(styles.find(f"{_P}{name}"))
+    for element in chain:
+        pt = _list_style_pt(element, level)
+        if pt is not None:
+            return pt
+    return None
+
+
+def pptx_word_sizes(text_frame, default_pt: float = DEFAULT_PPTX_PT, shape=None) -> list[float]:
     """The type size of each word in a text frame, in points.
 
-    A run's own size wins, then its paragraph's; a run that sets neither gets
-    default_pt, since sizes inherited from the slide master are not resolved.
+    A run's own size wins, then its paragraph's, then the size the shape
+    inherits from the slide layout and master when it is a placeholder;
+    anything left unset gets default_pt.
     """
     sizes = []
     for paragraph in text_frame.paragraphs:
         para_size = paragraph.font.size
+        fallback = None
         for run in paragraph.runs:
             size = run.font.size or para_size
-            pt = size.pt if size is not None else default_pt
+            if size is not None:
+                pt = size.pt
+            else:
+                if fallback is None:
+                    fallback = inherited_pt(shape, paragraph.level) if shape is not None else None
+                    fallback = fallback if fallback is not None else default_pt
+                pt = fallback
             sizes.extend([pt] * len(run.text.split()))
     return sizes
 
@@ -140,7 +207,7 @@ def read_pptx(path: str | Path, default_pt: float = DEFAULT_PPTX_PT) -> list[Sli
             if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
                 images += 1
             for frame in _text_frames(shape):
-                sizes.extend(pptx_word_sizes(frame, default_pt))
+                sizes.extend(pptx_word_sizes(frame, default_pt, shape))
         slides.append(slide_stats(number, sizes, width_pt, images))
     return slides
 

@@ -81,7 +81,7 @@ A `.pptx` can be read directly, with no PDF export:
 python deck_reader.py deck.pptx --strict
 ```
 
-Words, pictures and type sizes are read from text boxes, groups and tables. A run that sets no size of its own or on its paragraph is counted at 18pt, PowerPoint's default, because sizes inherited from the slide master are not looked up. Rendering slides to images still needs a PDF.
+Words, pictures and type sizes are read from text boxes, groups and tables. A run that sets no size of its own or on its paragraph takes the size its placeholder inherits, looked up the way PowerPoint does it: the placeholder's own list style, the matching placeholder on the slide layout, the master placeholder, then the master's title, body or other text style, at the paragraph's indent level. Text boxes and table cells that set no size are counted at 18pt, PowerPoint's default. Rendering slides to images still needs a PDF.
 
 ## Checking titles
 
