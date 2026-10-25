@@ -9,11 +9,16 @@ are left as prompts to fill in from the rendered images.
 Usage:
     python deck_card.py deck.pptx
     python deck_card.py deck.pdf --name "Retail case (kirana vs quick commerce)" --result "finalist"
+    python deck_card.py deck.pptx --render slides/   also save every slide as slides/s-<n>.jpg
 """
 from __future__ import annotations
 
 import argparse
+import re
+import shutil
+import subprocess
 import sys
+import tempfile
 import textwrap
 from pathlib import Path
 from typing import Sequence
@@ -54,6 +59,41 @@ def weak_spots(
     return spots
 
 
+def _slide_number(path: Path) -> int:
+    match = re.search(r"-(\d+)$", path.stem)
+    return int(match.group(1)) if match else 0
+
+
+def slide_images(out_dir: str | Path) -> list[Path]:
+    """The s-<n>.jpg files pdftoppm wrote, in slide order (it pads n on long decks)."""
+    return sorted(Path(out_dir).glob("s-*.jpg"), key=_slide_number)
+
+
+def pptx_to_pdf(path: str | Path, work_dir: str | Path) -> Path:
+    """Export a .pptx to PDF with LibreOffice, so pdftoppm can render it."""
+    soffice = shutil.which("soffice") or shutil.which("libreoffice")
+    if soffice is None:
+        raise RuntimeError("LibreOffice was not found; install it or export the deck to PDF")
+    subprocess.run(
+        [soffice, "--headless", "--convert-to", "pdf", "--outdir", str(work_dir), str(path)],
+        check=True, capture_output=True,
+    )
+    pdf = Path(work_dir) / (Path(path).stem + ".pdf")
+    if not pdf.is_file():
+        raise RuntimeError(f"LibreOffice did not export {Path(path).name} to PDF")
+    return pdf
+
+
+def render(deck: str | Path, out_dir: str | Path) -> list[Path]:
+    """Save every slide of a PDF or .pptx into out_dir as JPEG and return the files."""
+    if Path(deck).suffix.lower() != ".pptx":
+        dr.render_slides(deck, out_dir)
+    else:
+        with tempfile.TemporaryDirectory() as work:
+            dr.render_slides(pptx_to_pdf(deck, work), out_dir)
+    return slide_images(out_dir)
+
+
 def _field(label: str, value: str) -> list[str]:
     return textwrap.wrap(f"{label}: {value}", WIDTH, subsequent_indent="  ") or [f"{label}:"]
 
@@ -63,6 +103,7 @@ def build_card(
     slides: Sequence[dr.SlideStats],
     titles: Sequence[tuple[int, str]],
     result: str = "not stated",
+    images: Sequence[Path] = (),
 ) -> str:
     content = dr.content_slides(slides)
     median = dr.median_words(slides)
@@ -70,13 +111,16 @@ def build_card(
     if median is not None:
         counts += f"   Words per content slide: about {round(median, -1):.0f}"
     spots = weak_spots(slides, titles)
+    fill_in = FILL_IN
+    if images:
+        fill_in = f"(fill in from the slide images in {Path(images[0]).parent}/)"
     lines = [
         *_field("Deck", name),
         f"Result: {result:<34} {counts}",
         *_field("Arc", arc(titles)),
-        *_field("Layout", FILL_IN),
-        *_field("What makes it work", FILL_IN),
-        *_field("Worth borrowing", FILL_IN),
+        *_field("Layout", fill_in),
+        *_field("What makes it work", fill_in),
+        *_field("Worth borrowing", fill_in),
         *_field("Weak spots", "; ".join(spots) if spots else "none found by the checks"),
     ]
     return "```\n" + "\n".join(lines) + "\n```"
@@ -87,12 +131,23 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("deck", help="the deck as a PDF or .pptx")
     parser.add_argument("--name", help="what the deck is (defaults to the file name)")
     parser.add_argument("--result", default="not stated", help="how the deck placed, if known")
+    parser.add_argument("--render", metavar="DIR",
+                        help="also save every slide into DIR as s-<n>.jpg (a .pptx needs LibreOffice)")
     args = parser.parse_args(argv)
     if not Path(args.deck).is_file():
         parser.error(f"no such file: {args.deck}")
+    images: list[Path] = []
+    if args.render:
+        try:
+            images = render(args.deck, args.render)
+        except (RuntimeError, subprocess.CalledProcessError) as err:
+            print(f"deck_card.py: could not render slides: {err}", file=sys.stderr)
+            return 2
     card = build_card(args.name or Path(args.deck).stem, dr.read_deck(args.deck),
-                      tt.read_titles(args.deck), args.result)
+                      tt.read_titles(args.deck), args.result, images)
     print(card)
+    if images:
+        print(f"Saved {len(images)} slide images in {args.render}", file=sys.stderr)
     return 0
 
 

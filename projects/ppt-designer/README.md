@@ -121,6 +121,16 @@ Weak spots: 3 of 4 titles are topic-only (slides 1, 3, 4)
 
 The arc is the slide titles in order, each cut to six words. Weak spots list what `deck_reader.py` and `titles.py` can see: topic-only titles, type under 8pt and slides over 450 words. `--name` defaults to the file name and `--result` to "not stated".
 
+To fill in the visual fields, `--render` also saves every slide beside the card as `s-<n>.jpg`, and the prompts then name that folder. A PDF is rendered with poppler's `pdftoppm`; a `.pptx` is first exported to PDF with LibreOffice (`soffice --headless`), so both need to be installed. If rendering fails, the card is not printed and the command exits with status 2.
+
+```bash
+python deck_card.py deck.pptx --render slides/
+```
+
+```
+Layout: (fill in from the slide images in slides/)
+```
+
 ## Scoring a deck on the rubric
 
 Before handing a deck over, the skill scores it on five criteria (Clarity, Feasibility, Evidence, Story, Q&A readiness) at 1, 3 or 5. `rubric.py` takes those scores and lists the criteria weakest first, with what a 5 needs for each one under 5:
