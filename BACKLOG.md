@@ -21,10 +21,10 @@ Planned work, grouped into small projects. Ticked items are done; `LOG.md` has t
 - [x] Draft a deck card from the measurements, using the template in the skill
 - [x] Rubric scorer: enter 1, 3 or 5 on the five criteria and get a report with the weakest first
 - [x] Build the skill's web page from `SKILL.md`
-- [ ] Serve the skill's page with GitHub Pages
+- [ ] Serve the skill's page with GitHub Pages (needs Pages turned on in the repo settings first)
 - [x] Resolve `.pptx` type sizes inherited from the slide layout and master
 - [x] Add `titles.py` results to `deck_reader.py --format json` so one run gives the full check
-- [ ] `deck_card.py --render` to save slide images beside the card for filling in the layout fields
+- [x] `deck_card.py --render` to save slide images beside the card for filling in the layout fields
 
 ## Product analytics
 
