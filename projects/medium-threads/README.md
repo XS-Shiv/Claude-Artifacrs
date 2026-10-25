@@ -1,0 +1,41 @@
+# medium-threads
+
+The code behind my Medium → X threads automation. It started as an n8n workflow that, once a day, takes the newest Medium essay not yet tweeted, has a model draft a five-tweet thread in my voice, and posts it to X with a last tweet linking the essay. The steps that do not need a model are being moved here as small, tested Python, one step at a time.
+
+| File | What it does |
+|---|---|
+| `thread.py` | Cleans drafted tweets into a thread that is safe to post: strips links, drops empty tweets, keeps at most six, cuts each to 280 characters at a word boundary and adds the link tweet |
+
+## Building a thread from a draft
+
+A draft is the model's output plus the essay's title and link:
+
+```json
+{"title": "Are Tooltips UX or Confessions?", "link": "https://medium.com/...", "tweets": ["...", "..."]}
+```
+
+```bash
+python thread.py examples/draft.json
+```
+
+```
+[1/5] 74 chars
+Every tooltip is a small admission that the screen did not explain itself.
+
+...
+
+[5/5] 116 chars
+Full essay: Are Tooltips UX or Confessions?
+https://medium.com/coinmonks/are-tooltips-ux-or-confessions-a012d600d0c5
+```
+
+`--json` prints the thread as a JSON list instead, ready to post tweet by tweet. Links inside drafted tweets are removed, because the essay link has its own tweet at the end. A tweet over 280 characters is cut back to its last space and ends in an ellipsis, unless that space falls in the first 70% of the limit, in which case it is cut mid-word. A draft with fewer than three usable tweets exits with status 1 so nothing half-finished gets posted; a file that is not a draft exits with status 2.
+
+Lengths are counted in Unicode code points, the same way the workflow counts them. X itself counts links as 23 characters and some scripts and emoji as two; that is on the backlog.
+
+## Tests
+
+```bash
+pip install -r requirements.txt
+pytest
+```
