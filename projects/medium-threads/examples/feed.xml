@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0">
+<channel>
+<title>Sample feed</title>
+<item>
+<title><![CDATA[Are Tooltips UX or Confessions?]]></title>
+<link>https://medium.com/coinmonks/are-tooltips-ux-or-confessions-a012d600d0c5?source=rss----721b17443fd5---4</link>
+<guid isPermaLink="false">https://medium.com/p/a012d600d0c5</guid>
+<content:encoded><![CDATA[<figure><img src="https://cdn-images-1.medium.com/max/1024/x.png"><figcaption>A tooltip, waiting.</figcaption></figure><h3>Every tooltip is a small admission</h3><p>The screen didn&#8217;t explain itself, so a little box&nbsp;has to.</p><ul><li>Labels that need help</li><li>Icons nobody reads</li></ul><p>Good design &amp; good copy remove most of them.</p><hr><p><a href="https://medium.com/coinmonks/x">Are Tooltips UX or Confessions?</a> was originally published in <a href="https://medium.com/coinmonks">Coinmonks</a> on Medium, where people are continuing the conversation by highlighting and responding to this story.</p>]]></content:encoded>
+</item>
+</channel>
+</rss>

@@ -4,7 +4,26 @@ The code behind my Medium → X threads automation. It started as an n8n workflo
 
 | File | What it does |
 |---|---|
+| `feed_item.py` | Turns a Medium RSS item into clean essay text: HTML stripped to paragraphs, entities decoded, images and the "originally published" footer dropped, tracking query removed from the link |
 | `thread.py` | Cleans drafted tweets into a thread that is safe to post: strips links, drops empty tweets, keeps at most six, cuts each to 280 characters at a word boundary and adds the link tweet |
+
+## Cleaning an essay from the feed
+
+```bash
+python feed_item.py examples/feed.xml
+```
+
+```
+Are Tooltips UX or Confessions?
+https://medium.com/coinmonks/are-tooltips-ux-or-confessions-a012d600d0c5
+
+Every tooltip is a small admission
+
+The screen didn’t explain itself, so a little box has to.
+...
+```
+
+`--index N` picks another item (0 is the first) and `--json` prints `guid`, `title`, `link` and `text` as JSON. A feed that cannot be read, an item with no title or link, or an index past the end exits with status 2.
 
 ## Building a thread from a draft
 
