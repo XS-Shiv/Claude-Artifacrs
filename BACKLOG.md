@@ -5,7 +5,7 @@ Planned work, grouped into small projects. Ticked items are done; `LOG.md` has t
 ## medium-threads (in progress)
 
 - [x] `thread.py`: clean drafted tweets into a postable thread (links stripped, 280-character cap, at most six, link tweet last), with tests
-- [ ] Turn a Medium RSS item into clean essay text: strip HTML and the "originally published" footer, decode entities, drop the tracking query from the link
+- [x] Turn a Medium RSS item into clean essay text: strip HTML and the "originally published" footer, decode entities, drop the tracking query from the link
 - [ ] Pick the next essay from the feed: skip ones already posted, newest first, one per run
 - [ ] Keep the posted log as a local JSON file: guid, title, link and root tweet id
 - [ ] Count length the way X does: links as 23 characters, wide characters and emoji as two
