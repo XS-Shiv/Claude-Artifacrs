@@ -4,8 +4,23 @@ The code behind my Medium → X threads automation. It started as an n8n workflo
 
 | File | What it does |
 |---|---|
+| `next_essay.py` | Picks the one essay to thread this run: the newest feed item whose guid is not in the posted log |
 | `feed_item.py` | Turns a Medium RSS item into clean essay text: HTML stripped to paragraphs, entities decoded, images and the "originally published" footer dropped, tracking query removed from the link |
 | `thread.py` | Cleans drafted tweets into a thread that is safe to post: strips links, drops empty tweets, keeps at most six, cuts each to 280 characters at a word boundary and adds the link tweet |
+
+## Picking the next essay
+
+```bash
+python next_essay.py examples/feed_three.xml --posted examples/posted.json
+```
+
+```
+Gas Fees Are a Design Problem
+https://medium.com/@sample/gas-fees-are-a-design-problem-1c2d3e4f5061
+2026-10-24
+```
+
+Items are sorted newest first by `<pubDate>`, compared as instants across time zones; an item with no readable date sorts last. The posted log is a JSON list of guids or of objects with a `guid` key, and a missing log means nothing is posted yet. `--json` prints the essay with its `text`. When every essay is posted it exits with status 1; an unreadable feed or malformed log exits with status 2.
 
 ## Cleaning an essay from the feed
 

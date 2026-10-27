@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+<channel>
+<title>Sample feed with three essays</title>
+<item>
+<title><![CDATA[Empty States Are Onboarding]]></title>
+<link>https://medium.com/@sample/empty-states-are-onboarding-0b1c2d3e4f50?source=rss-sample------2</link>
+<guid isPermaLink="false">https://medium.com/p/0b1c2d3e4f50</guid>
+<pubDate>Mon, 19 Oct 2026 08:30:00 GMT</pubDate>
+<content:encoded><![CDATA[<p>An empty screen is the first lesson a product gives.</p>]]></content:encoded>
+</item>
+<item>
+<title><![CDATA[Gas Fees Are a Design Problem]]></title>
+<link>https://medium.com/@sample/gas-fees-are-a-design-problem-1c2d3e4f5061?source=rss-sample------2</link>
+<guid isPermaLink="false">https://medium.com/p/1c2d3e4f5061</guid>
+<pubDate>Sat, 24 Oct 2026 10:00:00 +0530</pubDate>
+<content:encoded><![CDATA[<p>Nobody reads a fee they cannot predict.</p>]]></content:encoded>
+</item>
+<item>
+<title><![CDATA[Are Tooltips UX or Confessions?]]></title>
+<link>https://medium.com/coinmonks/are-tooltips-ux-or-confessions-a012d600d0c5?source=rss----721b17443fd5---4</link>
+<guid isPermaLink="false">https://medium.com/p/a012d600d0c5</guid>
+<pubDate>Sun, 25 Oct 2026 14:00:00 GMT</pubDate>
+<content:encoded><![CDATA[<p>Every tooltip is a small admission.</p>]]></content:encoded>
+</item>
+</channel>
+</rss>
