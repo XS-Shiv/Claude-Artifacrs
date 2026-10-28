@@ -5,6 +5,7 @@ The code behind my Medium → X threads automation. It started as an n8n workflo
 | File | What it does |
 |---|---|
 | `next_essay.py` | Picks the one essay to thread this run: the newest feed item whose guid is not in the posted log |
+| `posted_log.py` | Keeps the posted log: guid, title, link, root tweet id and time for each threaded essay, written atomically and refusing duplicates |
 | `feed_item.py` | Turns a Medium RSS item into clean essay text: HTML stripped to paragraphs, entities decoded, images and the "originally published" footer dropped, tracking query removed from the link |
 | `thread.py` | Cleans drafted tweets into a thread that is safe to post: strips links, drops empty tweets, keeps at most six, cuts each to 280 characters at a word boundary and adds the link tweet |
 
@@ -21,6 +22,24 @@ https://medium.com/@sample/gas-fees-are-a-design-problem-1c2d3e4f5061
 ```
 
 Items are sorted newest first by `<pubDate>`, compared as instants across time zones; an item with no readable date sorts last. The posted log is a JSON list of guids or of objects with a `guid` key, and a missing log means nothing is posted yet. `--json` prints the essay with its `text`. When every essay is posted it exits with status 1; an unreadable feed or malformed log exits with status 2.
+
+## Recording a posted thread
+
+```bash
+python posted_log.py add posted.json --guid https://medium.com/p/1c2d3e4f5061 \
+  --title "Gas Fees Are a Design Problem" \
+  --link https://medium.com/@sample/gas-fees-are-a-design-problem-1c2d3e4f5061 \
+  --tweet-id 1850000000000000001
+python posted_log.py list posted.json
+```
+
+```
+logged https://medium.com/p/1c2d3e4f5061 (2 posted)
+2026-10-28   1850000000000000001  Gas Fees Are a Design Problem
+-                     -  Are Tooltips UX or Confessions?
+```
+
+The log is the same file `next_essay.py --posted` reads. Each record gets a UTC `posted_at`; the tweet id must be digits. Adding a guid that is already logged exits with status 1 and leaves the file untouched, so a re-run cannot post an essay twice. Older logs of bare guid strings are read and written back as objects. The file is written to a temp file and swapped in, so a crash mid-write keeps the previous log. Bad input or a malformed log exits with status 2.
 
 ## Cleaning an essay from the feed
 
