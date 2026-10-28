@@ -8,7 +8,7 @@ Things I first built as Claude artifacts and skills, turned into small, tested P
 |---|---|---|
 | [ppt-transition](projects/ppt-transition) | A Claude skill and engine that add PowerPoint Morph transitions to a finished deck, component by component | Paused |
 | [ppt-designer](projects/ppt-designer) | A Claude skill for designing and critiquing slide decks, with tools that check density and titles slide by slide | Paused |
-| [medium-threads](projects/medium-threads) | The steps behind my Medium → X threads automation: pick the next essay, clean the drafted tweets and build a postable thread | In progress |
+| [medium-threads](projects/medium-threads) | The steps behind my Medium → X threads automation: pick the next essay, clean the drafted tweets, build a postable thread and remember what was posted | In progress |
 
 ## How this repo is organised
 
