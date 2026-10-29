@@ -7,7 +7,8 @@ The code behind my Medium → X threads automation. It started as an n8n workflo
 | `next_essay.py` | Picks the one essay to thread this run: the newest feed item whose guid is not in the posted log |
 | `posted_log.py` | Keeps the posted log: guid, title, link, root tweet id and time for each threaded essay, written atomically and refusing duplicates |
 | `feed_item.py` | Turns a Medium RSS item into clean essay text: HTML stripped to paragraphs, entities decoded, images and the "originally published" footer dropped, tracking query removed from the link |
-| `thread.py` | Cleans drafted tweets into a thread that is safe to post: strips links, drops empty tweets, keeps at most six, cuts each to 280 characters at a word boundary and adds the link tweet |
+| `x_length.py` | Counts a tweet's length the way X does: links as 23, wide scripts and "…" as 2, a whole emoji sequence as 2 |
+| `thread.py` | Cleans drafted tweets into a thread that is safe to post: strips links, drops empty tweets, keeps at most six, cuts each to 280 as X counts length at a word boundary and adds the link tweet |
 
 ## Picking the next essay
 
@@ -77,14 +78,26 @@ Every tooltip is a small admission that the screen did not explain itself.
 
 ...
 
-[5/5] 116 chars
+[5/5] 67 chars
 Full essay: Are Tooltips UX or Confessions?
 https://medium.com/coinmonks/are-tooltips-ux-or-confessions-a012d600d0c5
 ```
 
-`--json` prints the thread as a JSON list instead, ready to post tweet by tweet. Links inside drafted tweets are removed, because the essay link has its own tweet at the end. A tweet over 280 characters is cut back to its last space and ends in an ellipsis, unless that space falls in the first 70% of the limit, in which case it is cut mid-word. A draft with fewer than three usable tweets exits with status 1 so nothing half-finished gets posted; a file that is not a draft exits with status 2.
+`--json` prints the thread as a JSON list instead, ready to post tweet by tweet. Links inside drafted tweets are removed, because the essay link has its own tweet at the end. A tweet over 280 is cut back to its last space and ends in an ellipsis, unless that space falls in the first 70% of the limit, in which case it is cut mid-word. A draft with fewer than three usable tweets exits with status 1 so nothing half-finished gets posted; a file that is not a draft exits with status 2.
 
-Lengths are counted in Unicode code points, the same way the workflow counts them. X itself counts links as 23 characters and some scripts and emoji as two; that is on the backlog.
+Lengths are counted the way X counts them, with `x_length.py`, and the cut never splits a link or an emoji.
+
+## Counting length the way X does
+
+```bash
+python x_length.py "Hello 👋🏽 世界 https://example.com/long"
+```
+
+```
+37/280
+```
+
+It follows twitter-text's v3 weights: text is NFC-normalised, a link counts as 23 however long it is, Latin and other scripts below U+1100 and the common punctuation ranges (spaces, dashes, curly quotes) count as 1, and everything else counts as 2, including CJK, Hangul and the "…" that `thread.py` adds when it cuts. An emoji counts as 2 however many code points build it: skin tones, ZWJ sequences, flags and keycaps. It exits with status 1 when the text is over 280.
 
 ## Tests
 

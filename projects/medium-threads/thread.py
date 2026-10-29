@@ -3,8 +3,8 @@
 This is the "Build Thread" step of the Medium -> X Threads automation. A model
 drafts the tweets from an essay; this step cleans them up before anything is
 posted: links are stripped (the essay link goes in its own last tweet), empty
-tweets are dropped, at most six are kept, each is cut to 280 characters at a
-word boundary, and a final tweet links to the full essay.
+tweets are dropped, at most six are kept, each is cut to 280 as X counts length
+(x_length.py) at a word boundary, and a final tweet links to the full essay.
 
 Usage:
     python thread.py draft.json
@@ -21,6 +21,8 @@ import sys
 from pathlib import Path
 from typing import Iterable, Sequence
 
+from x_length import segments, x_length
+
 MAX_CHARS = 280      # X's limit for one tweet
 MAX_TWEETS = 6       # drafted tweets kept, before the link tweet
 MIN_TWEETS = 3       # fewer usable tweets than this and nothing is posted
@@ -33,16 +35,24 @@ class ThreadError(ValueError):
 
 
 def cap(text: str, limit: int = MAX_CHARS) -> str:
-    """Cut text to at most `limit` characters, ending in an ellipsis.
+    """Cut text to at most `limit` as X counts length, ending in an ellipsis.
 
-    The cut goes back to the last space when that keeps at least 70% of the
-    limit, so a word is not split in half; otherwise it cuts mid-word.
+    X counts the ellipsis as 2. The cut goes back to the last space when that
+    keeps at least 70% of the limit, so a word is not split in half; otherwise
+    it cuts mid-word. A link or an emoji is never split.
     """
-    if len(text) <= limit:
+    if x_length(text) <= limit:
         return text
-    cut = text[: limit - 1]
+    budget = limit - x_length("…")
+    pieces, used = [], 0
+    for piece, weight in segments(text):
+        if used + weight > budget:
+            break
+        pieces.append(piece)
+        used += weight
+    cut = "".join(pieces)
     space = cut.rfind(" ")
-    if space > limit * 0.7:
+    if space > 0 and x_length(cut[:space]) > limit * 0.7:
         cut = cut[:space]
     return cut + "…"
 
@@ -72,7 +82,7 @@ def format_thread(thread: Sequence[str]) -> str:
     """A preview of the thread with each tweet's position and length."""
     blocks = []
     for n, tweet in enumerate(thread, 1):
-        blocks.append(f"[{n}/{len(thread)}] {len(tweet)} chars\n{tweet}")
+        blocks.append(f"[{n}/{len(thread)}] {x_length(tweet)} chars\n{tweet}")
     return "\n\n".join(blocks)
 
 

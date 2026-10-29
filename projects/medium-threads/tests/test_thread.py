@@ -3,6 +3,7 @@ import json
 import pytest
 
 import thread as th
+from x_length import x_length
 
 TITLE = "Are Tooltips UX or Confessions?"
 LINK = "https://medium.com/coinmonks/are-tooltips-ux-or-confessions-a012d600d0c5"
@@ -23,8 +24,8 @@ def test_long_text_is_cut_at_a_word_boundary():
 def test_cut_goes_mid_word_when_the_last_space_is_too_early():
     text = "a " + "x" * 400
     out = th.cap(text)
-    assert len(out) == 280
-    assert out == "a " + "x" * 277 + "…"
+    assert x_length(out) == 280  # the ellipsis counts as 2 on X
+    assert out == "a " + "x" * 276 + "…"
 
 
 def test_links_and_spaces_are_removed():
@@ -46,8 +47,23 @@ def test_thread_keeps_at_most_six_drafted_tweets():
 
 def test_every_tweet_fits_in_280_characters():
     thread = th.build_thread(["y " * 200] * 4, "T" * 300, LINK)
-    assert all(len(t) <= 280 for t in thread[:-1])
-    assert thread[-1].startswith("Full essay: " + "T" * 199 + "…\n")
+    assert all(x_length(t) <= 280 for t in thread[:-1])
+    assert thread[-1].startswith("Full essay: " + "T" * 198 + "…\n")
+
+
+def test_cap_counts_wide_characters_and_emoji_the_way_x_does():
+    out = th.cap("日本 " * 100)  # 300 code points, 500 on X
+    assert x_length(out) <= 280 and len(out) < 280
+    assert out.endswith("日本…")
+    family = "\U0001F468\u200D\U0001F469\u200D\U0001F467"
+    out = th.cap("ok " + family * 200)
+    assert x_length(out) <= 280
+    assert out[:-1].endswith(family)  # an emoji is never split
+
+
+def test_preview_counts_the_link_as_23():
+    preview = th.format_thread([f"Full essay: T\n{LINK}"])
+    assert preview.startswith(f"[1/1] {14 + 23} chars")
 
 
 def test_too_few_usable_tweets_is_refused():
