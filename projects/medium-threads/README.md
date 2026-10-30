@@ -5,6 +5,7 @@ The code behind my Medium → X threads automation. It started as an n8n workflo
 | File | What it does |
 |---|---|
 | `next_essay.py` | Picks the one essay to thread this run: the newest feed item whose guid is not in the posted log |
+| `tier_order.py` | Orders the queue from the tier list: S and A essays only, design/AI and Web3 topics alternating |
 | `posted_log.py` | Keeps the posted log: guid, title, link, root tweet id and time for each threaded essay, written atomically and refusing duplicates |
 | `feed_item.py` | Turns a Medium RSS item into clean essay text: HTML stripped to paragraphs, entities decoded, images and the "originally published" footer dropped, tracking query removed from the link |
 | `x_length.py` | Counts a tweet's length the way X does: links as 23, wide scripts and "…" as 2, a whole emoji sequence as 2 |
@@ -23,6 +24,21 @@ https://medium.com/@sample/gas-fees-are-a-design-problem-1c2d3e4f5061
 ```
 
 Items are sorted newest first by `<pubDate>`, compared as instants across time zones; an item with no readable date sorts last. The posted log is a JSON list of guids or of objects with a `guid` key, and a missing log means nothing is posted yet. `--json` prints the essay with its `text`. When every essay is posted it exits with status 1; an unreadable feed or malformed log exits with status 2.
+
+## Posting order from the tier list
+
+```bash
+python tier_order.py examples/tiers.json --posted examples/posted.json
+```
+
+```
+ 1. S  web3       Gas Fees Are a Design Problem
+ 2. A  design-ai  Empty States Are Onboarding
+ 3. A  web3       Wallets Should Feel Like Inboxes
+ 4. A  design-ai  Prompts Are the New Forms
+```
+
+The tier list is a JSON list of `{"guid", "title", "tier", "topic"}`: tier is S, A, B or C and topic is `design-ai` or `web3` (`design`, `ai` and `design/ai` are read as `design-ai`). Only S and A essays are queued, S before A within a topic and ties in list order. Topics alternate, starting with the one the last posted essay was not, so two Web3 threads never go out back to back; with nothing posted yet it leads with the topic of the first S essay. When one topic runs out the other follows. `--next` prints only the next essay and `--json` prints JSON. It exits with status 1 when every S and A essay is posted, and 2 on an unreadable or invalid tier list (unknown tier or topic, a guid listed twice).
 
 ## Recording a posted thread
 
