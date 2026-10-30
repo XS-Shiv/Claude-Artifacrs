@@ -9,7 +9,7 @@ Planned work, grouped into small projects. Ticked items are done; `LOG.md` has t
 - [x] Pick the next essay from the feed: skip ones already posted, newest first, one per run
 - [x] Keep the posted log as a local JSON file: guid, title, link and root tweet id
 - [x] Count length the way X does: links as 23 characters, wide characters and emoji as two
-- [ ] Posting order from the tier list: S and A essays only, alternating design/AI and Web3 topics
+- [x] Posting order from the tier list: S and A essays only, alternating design/AI and Web3 topics
 - [ ] `--dry-run` CLI that runs feed to thread end to end and prints the thread without posting
 - [ ] Keep the thread-writing prompt in the repo and check a draft against its rules (five tweets, no hashtags, emojis, links or numbering)
 
