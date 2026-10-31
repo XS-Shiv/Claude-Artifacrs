@@ -2,7 +2,23 @@
 
 Planned work, grouped into small projects. Ticked items are done; `LOG.md` has the dates.
 
-## medium-threads (in progress)
+## dailypush-x (in progress)
+
+- [x] Add the skill and its references to the repo
+- [x] `check_thread.py` with a test for each audit rule
+- [x] `render_svg.js` with tests that render a PNG and refuse `<text>`
+- [ ] `check_thread.py`: stop flagging "24/7" and other in-sentence fractions as tweet numbering
+- [ ] `next_day.py`: work out day N (highest `day-N` + 1) and refuse to overwrite an existing folder
+- [ ] `scaffold.py`: create the day folder layout with empty `thread.json`, `brief.md` and `audit.md`
+- [ ] Parse the Medium library table (`queue | tier | title | url | pillar | why it works | last_posted`)
+- [ ] Pick slot A's essay: lowest queue row not posted, then the oldest `last_posted` at least 90 days ago
+- [ ] Read `audit.md` and give READY only when every line is PASS, else NEEDS-REVIEW
+- [ ] `queue.py add`: append a READY piece to `queue.json`, refusing duplicates and NEEDS-REVIEW pieces
+- [ ] Append both pieces to `posted.json` with status `drafted`, date, slot, topic and source URL
+- [ ] Work out which posting slot is due and whether it is already served, from the posted rows
+- [ ] Write `summary.md` from the two pieces' threads, audits and image status
+
+## medium-threads (paused)
 
 - [x] `thread.py`: clean drafted tweets into a postable thread (links stripped, 280-character cap, at most six, link tweet last), with tests
 - [x] Turn a Medium RSS item into clean essay text: strip HTML and the "originally published" footer, decode entities, drop the tracking query from the link
