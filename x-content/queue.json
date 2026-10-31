@@ -1,0 +1,20 @@
+[
+  {
+    "id": "day-1-A",
+    "day": "day-1",
+    "slot": "A",
+    "dir": "x-content/day-1/piece-1-medium",
+    "status": "READY",
+    "created": "2026-10-29",
+    "title": "If a designer can fully replace Figma with AI generators and lose nothing…"
+  },
+  {
+    "id": "day-1-B",
+    "day": "day-1",
+    "slot": "B",
+    "dir": "x-content/day-1/piece-2-industry",
+    "status": "READY",
+    "created": "2026-10-31",
+    "title": "AI in UX: Work Is Faster, But Practitioners Have Mixed Feelings"
+  }
+]

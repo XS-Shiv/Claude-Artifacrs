@@ -1,0 +1,19 @@
+[
+  {
+    "date": "2026-10-29",
+    "day": "day-1",
+    "slot": "A",
+    "status": "drafted",
+    "topic": "If a designer can fully replace Figma with AI generators and lose nothing…",
+    "source_url": "https://medium.com/design-bootcamp/if-a-designer-can-fully-replace-figma-with-ai-generators-and-lose-nothing-e086a93da73e",
+    "queue": 1
+  },
+  {
+    "date": "2026-10-31",
+    "day": "day-1",
+    "slot": "B",
+    "status": "drafted",
+    "topic": "NN/g survey: AI makes UX work faster but practitioners feel lukewarm",
+    "source_url": "https://www.nngroup.com/articles/ai-in-ux-survey-26/"
+  }
+]

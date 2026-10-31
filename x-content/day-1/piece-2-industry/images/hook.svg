@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <defs>
+    <g id="sheet">
+      <rect x="0" y="0" width="300" height="66" rx="10" fill="#F5F1EA" stroke="#1B2A41" stroke-width="5"/>
+      <line x1="24" y1="24" x2="180" y2="24" stroke="#1B2A41" stroke-width="5" stroke-linecap="round"/>
+      <line x1="24" y1="44" x2="130" y2="44" stroke="#1B2A41" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="252" cy="33" r="16" fill="none" stroke="#FF6B5A" stroke-width="6"/>
+      <line x1="236" y1="49" x2="268" y2="17" stroke="#FF6B5A" stroke-width="6" stroke-linecap="round"/>
+    </g>
+  </defs>
+
+  <rect width="1600" height="900" fill="#F5F1EA"/>
+
+  <!-- stopwatch -->
+  <rect x="368" y="150" width="64" height="44" rx="10" fill="#1B2A41"/>
+  <rect x="384" y="124" width="32" height="34" rx="6" fill="#1B2A41"/>
+  <rect x="540" y="208" width="44" height="26" rx="8" fill="#1B2A41" transform="rotate(42 562 221)"/>
+  <circle cx="400" cy="460" r="260" fill="#1B2A41"/>
+  <circle cx="400" cy="460" r="222" fill="#F5F1EA"/>
+  <!-- tick marks -->
+  <g stroke="#1B2A41" stroke-width="8" stroke-linecap="round">
+    <line x1="400" y1="258" x2="400" y2="286"/>
+    <line x1="602" y1="460" x2="574" y2="460"/>
+    <line x1="400" y1="662" x2="400" y2="634"/>
+    <line x1="198" y1="460" x2="226" y2="460"/>
+  </g>
+  <!-- the saved slice, pulled out of the dial -->
+  <path d="M400 460 L400 262 A198 198 0 0 1 571 361 Z" fill="#1B2A41" opacity="0.12"/>
+  <path d="M470 400 L470 202 A198 198 0 0 1 641 301 Z" fill="#FF6B5A"/>
+  <!-- hand -->
+  <line x1="400" y1="460" x2="300" y2="560" stroke="#1B2A41" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="400" cy="460" r="20" fill="#1B2A41"/>
+
+  <!-- the slice's path into the pile -->
+  <path d="M660 290 C 820 200, 940 220, 1010 330" fill="none" stroke="#FF6B5A" stroke-width="7" stroke-dasharray="4 20" stroke-linecap="round"/>
+  <polygon points="1000,312 1032,352 988,350" fill="#FF6B5A"/>
+
+  <!-- pile of drafts to fix -->
+  <use href="#sheet" transform="translate(1040 718) rotate(-2)"/>
+  <use href="#sheet" transform="translate(1062 650) rotate(3)"/>
+  <use href="#sheet" transform="translate(1030 584) rotate(-4)"/>
+  <use href="#sheet" transform="translate(1070 518) rotate(2)"/>
+  <use href="#sheet" transform="translate(1044 452) rotate(-3)"/>
+  <use href="#sheet" transform="translate(1076 386) rotate(5)"/>
+  <rect x="1000" y="790" width="420" height="16" rx="8" fill="#1B2A41"/>
+</svg>
